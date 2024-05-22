@@ -24,14 +24,25 @@ source("../functions_plots.R")
 # Pre-processing Parameters
 data_dir <- '../../01_DATA'
 results_dir <- '../../03_RESULTS'
-dateAcq <- '2021-06-14' # yyyy-mm-dd format mandatory
-site <- "Mormal"
+site <- "Aigoual" # Mormal Blois Aigoual
 
-path_vector <- paste(data_dir, site, "Shape/shp_mormal_onf/foret_domaniale_mormal.shp", sep = "/")
+if (site == "Mormal") {
+  path_vector <- paste(data_dir, site, "Shape/mormal_utm.shp", sep = "/")
+  dateAcq <- '2021-06-14' # yyyy-mm-dd format mandatory
+} else if (site == "Blois") {
+  path_vector <- paste(data_dir, site, "Shape/blois_utm.shp", sep = "/")
+  dateAcq <- '2021-06-14' # yyyy-mm-dd format mandatory
+} else if (site == "Aigoual") {
+  path_vector <- paste(data_dir, site, "Shape/aigoual_utm.shp", sep = "/")
+  dateAcq <- '2021-07-11' # yyyy-mm-dd format mandatory
+} else {
+  stop("Unknown site. Please provide a valid site name.")
+}
+
 
 # resolution <- 10 # 10 20
 # resolutions <- c(10,20)
-resolutions <- c(20) # 10 20
+resolutions <- c(10) # 10 20
 
 for (resolution in resolutions){
   
@@ -206,7 +217,7 @@ for (resolution in resolutions){
         # Chosen Distribution
         cat("Input Distribution", distrib, "\n")
         PROSAIL_ResPath <- file.path(PROSAIL_ResPath, 
-                                     paste0('PRO4SAIL_INVERSION_modifband', distrib))
+                                     paste0('PRO4SAIL_INVERSION_', distrib))
         dir.create(path = PROSAIL_ResPath, showWarnings = FALSE, recursive = TRUE)
         
         # Chosen Noise

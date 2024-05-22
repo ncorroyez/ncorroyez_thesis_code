@@ -33,26 +33,37 @@ source("../functions_plots.R")
 
 # Directories 
 data <- "../../01_DATA"
-site <- "Mormal"
+site <- "Aigoual" # Mormal Blois Aigoual
 data_site <- file.path(data, site)
 
 # LAS
-# las_utm <- "LiDAR/3-las_normalize_utm/"
 las_utm <- "LiDAR/2-las_utm/"
-las_dir <- file.path(data_site, las_utm)
-las_files <- list.files(las_dir, pattern = "\\.las$", full.names = TRUE)
+las_utm_dir <- file.path(data_site, las_utm)
+las_utm_files <- list.files(las_utm_dir, pattern = "\\.las$", full.names = TRUE)
+
+las_norm_utm <- "LiDAR/3-las_normalized_utm/"
+las_norm_utm_dir <- file.path(data_site, las_norm_utm)
+las_norm_utm_files <- list.files(las_norm_utm_dir, pattern = "\\.las$", full.names = TRUE)
 
 # Output
-output_dir <- "../../03_RESULTS/Mormal/LiDAR/PAI/lidR/"
+output_dir <- file.path("../../03_RESULTS", site, "LiDAR/PAI/lidR")
+dir.create(path = output_dir, showWarnings = FALSE, recursive = TRUE)
+
+# Test
+# las_test <- readLAS(las_files[30])
 
 # Catalog
-cat("lasDpath: ", las_dir, "\n")
-ctg <- readLAScatalog(las_dir)
+ctg <- readLAScatalog(las_norm_utm_dir)
 plot(ctg)
+
+ctg_non_norm <- readLAScatalog(las_utm_dir)
+plot(ctg_non_norm)
 
 # LiDR optimization
 opt_chunk_size(ctg) <- 0 # Processing by files
 opt_chunk_buffer(ctg) <- 1
+opt_chunk_size(ctg_non_norm) <- 0 # Processing by files
+opt_chunk_buffer(ctg_non_norm) <- 1
 # opt_select(ctg) <- "xyzicr"
 set_lidr_threads(1)
 
@@ -63,11 +74,13 @@ set_lidr_threads(1)
 # las_files_small <- las_files[72:74]
 
 # Masks
-mask_10m <- terra::rast("/home/corroyez/Documents/NC_Full/03_RESULTS/Mormal/LiDAR/Heterogeneity_Masks/artifacts_low_vegetation_majority_90_p_res_10_m.envi")
+mask_10m <- terra::rast(file.path("/home/corroyez/Documents/NC_Full/03_RESULTS",
+                                  site,
+                                  "LiDAR/Heterogeneity_Masks/artifacts_low_vegetation_majority_90_p_res_10_m.envi"))
 # mask_20m <- terra::rast("/home/corroyez/Documents/NC_Full/03_RESULTS/Mormal/LiDAR/Heterogeneity_Masks/artifacts_low_vegetation_majority_90_p_res_20_m.envi")
 
 # Lmoms
-lmoms_rasters <- lidR::pixel_metrics(ctg, 
+lmoms_rasters <- lidR::pixel_metrics(ctg_non_norm, 
                                      ~as.list(lmom::samlmu(Z, nmom=3, ratios=F)),
                                      10)
 
@@ -93,17 +106,13 @@ writeRaster(lskew,
             overwrite = TRUE)
 
 VCI_local <- function(z){
-  vci <- VCI(z, zmax=max(z))
+  zmax <- max(z)
+  vci <- VCI(z, zmax=zmax)
 }
-
-vci <- lidR::pixel_metrics(ctg, ~VCI_local(Z), res = 10)
-vci <- terra::project(vci, mask_10m)
-vci <- mask(vci, mask_10m)
-writeRaster(vci, 
-            filename = file.path(output_dir, "vci_res_10_m_non_norm.tif"), 
-            overwrite = TRUE)
-
-# Rumple
+VDR <- function(z){
+  zmax <- max(z)
+  vdr <- (zmax - median(z)) / zmax
+}
 rumple_index_surface = function(las, res)
 {
   las <- filter_surfacepoints(las, 1)
@@ -111,32 +120,38 @@ rumple_index_surface = function(las, res)
   return(rumple)
 }
 
-# opt <- list(raster_alignment = 10)
-# rumple <- catalog_map(ctg, rumple_index_surface, res = 10, .options = opt)
-# zmax <- max(ctg@data$Max.Z)
-# vci <- lidR::pixel_metrics(ctg, ~VCI(Z, zmax), res = 10)
-# # plot(rumple)
+vci <- lidR::pixel_metrics(ctg_non_norm, ~VCI_local(Z), res = 10)
+vci <- terra::project(vci, mask_10m)
+vci <- mask(vci, mask_10m)
+vdr <- lidR::pixel_metrics(ctg_non_norm, ~VDR(Z), res = 10)
+vdr <- terra::project(vdr, mask_10m)
+vdr <- mask(vdr, mask_10m)
+opt <- list(raster_alignment = 10)
+rumple_upgrade <- catalog_map(ctg_non_norm, rumple_index_surface, res = 10, .options = opt)
+rumple_upgrade <- terra::project(rumple_upgrade, mask_10m)
+rumple_upgrade <- mask(rumple_upgrade, mask_10m)
+writeRaster(vci, 
+            filename = file.path(output_dir, "vci_res_10_m_non_norm.tif"), 
+            overwrite = TRUE)
+writeRaster(vdr, 
+            filename = file.path(output_dir, "vdr_res_10_m_non_norm.tif"), 
+            overwrite = TRUE)
+writeRaster(rumple_upgrade,
+            filename = file.path(output_dir, "rumple_res_10_m_non_norm.tif"),
+            overwrite = TRUE)
+# rumple <- lidR::pixel_metrics(ctg, ~rumple_index(X,Y,Z), res = 10)
 # rumple <- terra::project(rumple, mask_10m)
 # rumple <- mask(rumple, mask_10m)
+# writeRaster(rumple,
+#             filename = file.path(output_dir, "rumple_res_10_m_non_norm.tif"),
+#             overwrite = TRUE)
 
-# rumplee <- lidR::pixel_metrics(ctg_2, ~rumple_index(X,Y,Z), res = 10)
-# # plot(rumplee)
+
+# rumple <- lidR::pixel_metrics(ctg_2, ~rumple_index(X,Y,Z), res = 10)
 # writeRaster(rumple, 
 #             filename = file.path(output_dir, "rumple_res_10_m_non_norm.tif"), 
 #             overwrite = TRUE)
 
-# VDR
-VDR <- function(z){
-  zmax <- max(z)
-  vdr <- (zmax - median(z)) / zmax
-}
-
-vdr <- lidR::pixel_metrics(ctg, ~VDR(Z), res = 10)
-vdr <- terra::project(vdr, mask_10m)
-vdr <- mask(vdr, mask_10m)
-writeRaster(vdr, 
-            filename = file.path(output_dir, "vdr_res_10_m_non_norm.tif"), 
-            overwrite = TRUE)
 
 # PAI calculation
 myPAI <- function(z, zmin, k=0.5){
@@ -178,7 +193,7 @@ myPAD <- function(z, zmin=2, zmax) {
 # Test on a small catalog
 # n = 2
 # ctg_2 = head(ctg, n = n)
-ctg_2 <- readLAScatalog(las_files[4])
+ctg_2 <- readLAScatalog(las_norm_utm_files[4])
 
 # On the whole catalog
 # pai_ctg <- lidR::pixel_metrics(ctg_2, ~myPAI(Z, zmin=2))
@@ -188,33 +203,41 @@ ctg_2 <- readLAScatalog(las_files[4])
 
 # PAD
 z0 <- 2
-zmax <- max(ctg@data$Max.Z)
-res = 1
+zmax <- max(ctg@data$Max.Z[ctg@data$Max.Z < 50])
+res = 10
 pad_rasters <- lidR::pixel_metrics(ctg, ~myPAD(Z, zmin=2, zmax=zmax), res=res)
-# pad_rasters <- lidR::pixel_metrics(ctg_2, ~myPADD(Z, 
-#                                                zmin = 2, 
-#                                                zmax = zmax, 
-#                                                input_res = 1, 
-#                                                output_res = res), 
-#                                    res = res)
-# pad_rasters_res <- terra::aggregate(pad_rasters, fact=10) 
 pad_rasters_res <- terra::project(pad_rasters, mask_10m, method = 'average')
-for (i in 1:nlyr(pad_rasters)) {
-  layer <- subset(pad_rasters, i)
+for (i in 1:nlyr(pad_rasters_res)) {
+  layer <- subset(pad_rasters_res, i)
   filename <- paste0("PAD_", 
-                     names(pad_rasters)[i], 
+                     names(pad_rasters_res)[i], 
                      "_", 
                      zmax,
-                     # "_1over10_",
                      ".tif")
   writeRaster(layer, 
               filename = file.path(output_dir, filename),
               overwrite = TRUE)
 }
 # Other metrics
-vci <- lidR::pixel_metrics(ctg, ~VCI(Z, zmax))
-cv_lad <- lidR::pixel_metrics(ctg, ~cv(LAD(Z)$lad))
-rumple <- lidR::pixel_metrics(ctg, ~rumple_index(X,Y,Z))
+vci <- lidR::pixel_metrics(ctg, ~VCI(Z, zmax), res=res)
+cv_lad <- lidR::pixel_metrics(ctg, ~cv(LAD(Z)$lad), res=res)
+rumple <- lidR::pixel_metrics(ctg, ~rumple_index(X,Y,Z), res=res)
+pai <- lidR::pixel_metrics(ctg, ~myPAI(Z, zmin=2), res=res)
+pai[pai == Inf] <- NA
+writeRaster(pai, 
+            filename = file.path(output_dir, "pai.tif"), 
+            overwrite = TRUE)
+writeRaster(cv_lad, 
+            filename = file.path(output_dir, "cv_lad.tif"), 
+            overwrite = TRUE)
+
+
+
+
+
+
+
+
 
 # Delete inf values
 # pai_ctg[pai_ctg == Inf] <- NA
@@ -231,14 +254,3 @@ rumple <- lidR::pixel_metrics(ctg, ~rumple_index(X,Y,Z))
 # writeRaster(pai_ctg, 
 #             filename = file.path(output_dir, "pai_las_cleaned.tif"), 
 #             overwrite = TRUE)
-
-# Export raster to tif
-writeRaster(vci, 
-            filename = file.path(output_dir, "vci.tif"), 
-            overwrite = TRUE)
-writeRaster(cv_lad, 
-            filename = file.path(output_dir, "cv_lad.tif"), 
-            overwrite = TRUE)
-writeRaster(rumple, 
-            filename = file.path(output_dir, "rumple.tif"), 
-            overwrite = TRUE)

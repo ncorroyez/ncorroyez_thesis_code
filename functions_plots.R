@@ -331,7 +331,7 @@ plot_distributions <- function(InputPROSAIL,
       }
       file_path <- file.path(dirname, filename)
       ggsave(filename = paste0(file_path, ".png"), final_plot, 
-             width = 300, height = 300, dpi = 200)
+             width = 1920, height = 1080, units = "px", dpi = 100)
       cat("Plots saved at: ", paste0(file_path, ".png"), "\n")
     } else {
       warning("Please provide both directory name and file name for saving plots.")

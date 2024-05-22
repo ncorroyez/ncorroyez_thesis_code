@@ -30,16 +30,19 @@ actual_epsg <- "-epsg 2154"
 
 # Chemin vers le dossier contenant les fichiers LAS
 datapath <- "/home/corroyez/Documents/NC_Full/01_DATA"
-las_l93_dir <- file.path(datapath, "Mormal/LiDAR/1-las_l93")
+site <- "Aigoual" # Mormal Blois Aigoual
+las_l93_dir <- file.path(datapath, site, "LiDAR/1-las_l93")
 las_l93_files <- list.files(las_l93_dir, pattern = "\\.las$", full.names = FALSE)
-las_utm_dir <- file.path(datapath, "Mormal/LiDAR/2-las_utm")
+las_utm_dir <- file.path(datapath, site, "LiDAR/2-las_utm")
+dir.create(path = las_utm_dir, showWarnings = FALSE, recursive = TRUE)
 
 # setwd(lastools_path)
 # Boucle sur les fichiers LAS du dossier
 for(file in las_l93_files) {
   # print(file.info(file.path(las_l93_dir, file)))
   # Chemin vers le fichier LAS reprojeté
-  filename_out <- paste0(tools::file_path_sans_ext(file), "_utm.las")
+  # filename_out <- paste0(tools::file_path_sans_ext(file), "_utm.las")
+  filename_out <- paste0(tools::file_path_sans_ext(file), ".las")
   
   # Commande LASTools pour la reprojection
   cmd <- paste0("LD_LIBRARY_PATH=/home/corroyez/Downloads/LAStools/bin/",

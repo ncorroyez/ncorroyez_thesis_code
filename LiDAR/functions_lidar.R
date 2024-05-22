@@ -21,18 +21,11 @@ library("sf")
 # }
 
 mask_site_edges <- function(reflectance,
-                            site_edges_path,
-                            site_edges_reprojected_bbox_path,
+                            site_edges_path, # utm format
                             resolution,
                             masks_dir
 ){
   site_edges_mask <- terra::vect(site_edges_path)
-  site_edges_reprojected_bbox_mask <- terra::vect(
-    site_edges_reprojected_bbox_path)
-  
-  site_edges_mask <- terra::project(site_edges_mask, 
-                                    site_edges_reprojected_bbox_mask)
-  
   site_edges_mask <- mask(reflectance, site_edges_mask)
   
   viz <- site_edges_mask
@@ -55,16 +48,14 @@ mask_site_edges <- function(reflectance,
 
 mask_clouds <- function(reflectance,
                         cloud_path,
-                        site_edges_reprojected_bbox_path,
+                        site_edges,
                         resolution,
                         masks_dir){
   cloud_mask <- terra::rast(cloud_path)
-  
-  site_edges_reprojected_bbox_mask <- terra::vect(
-    site_edges_reprojected_bbox_path)
+
   
   cloud_mask <- terra::project(cloud_mask, 
-                               site_edges_reprojected_bbox_mask)
+                               site_edges)
   
   cloud_mask <- reflectance * cloud_mask
   
@@ -184,14 +175,14 @@ mask_majority_project_mnc_threshold <- function(mnc,
                   dirname = masks_dir,
                   filename = sprintf("mnc_masked_with_average_mnc_thresholded_%s_p_kept_res_%s_m.png", 
                                      percentage*100, resolution),
-                  title = sprintf("mnc_masked_with_average_mnc_thresholded_%s_p_kept_res_%s_m.png", 
+                  title = sprintf("mnc_masked_with_average_mnc_thresholded_%s_p_kept_res_%s_m", 
                                   percentage*100, resolution))
   plot(mnc_final_mask,
-       main = sprintf("mnc_masked_with_average_mnc_thresholded_%s_p_kept_res_%s_m.png", 
+       main = sprintf("mnc_masked_with_average_mnc_thresholded_%s_p_kept_res_%s_m", 
                       percentage*100, resolution))
   
   save_envi_file(mnc_final_mask, 
-                 sprintf("mnc_masked_with_average_mnc_thresholded_%s_p_kept_res_%s_m.png", 
+                 sprintf("mnc_masked_with_average_mnc_thresholded_%s_p_kept_res_%s_m", 
                          percentage*100, resolution), 
                  masks_dir)
   

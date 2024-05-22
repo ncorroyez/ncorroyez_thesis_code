@@ -42,28 +42,28 @@ get_lidr_threads()
 
 # Directories 
 data <- "../../01_DATA"
-site <- "Mormal"
+site <- "Blois"
 data_site <- file.path(data, site)
-output_dir <- "../../03_RESULTS/Mormal/LiDAR/PAI/lidR/"
+output_dir <- "../../03_RESULTS/Blois/LiDAR/PAI/lidR/"
 
-# LAS UTM Normalized
-las_norm_utm <- "LiDAR/3-las_normalize_utm/"
+# LAS
+las_norm_utm <- "LiDAR/3-las_normalized_utm/"
 las_norm_utm_dir <- file.path(data_site, las_norm_utm)
 las_norm_utm_files <- list.files(las_norm_utm_dir, pattern = "\\.las$", 
                                  full.names = TRUE)
 
 # DTM 
-dtm_path <- file.path(las_norm_utm_dir, "dtm/res_1m/rasterize_terrain.vrt")
-dtm_charged <- terra::rast(dtm_path)
+# dtm_path <- file.path(las_norm_utm_dir, "dtm/res_1m/rasterize_terrain.vrt")
+# dtm_charged <- terra::rast(dtm_path)
 
 # Initialization
 z0 <- 2
-las_norm_utm_files_subset <- las_norm_utm_files[69:71]
+# las_norm_utm_files_subset <- las_norm_utm_files[69:71]
 
 # Catalog
 cat("lasDpath: ", las_norm_utm_dir, "\n")
 ctg <- readLAScatalog(las_norm_utm_files)
-# plot(ctg)
+plot(ctg)
 
 # Test
 # las_test <- readLAS(las_norm_utm_files[72])

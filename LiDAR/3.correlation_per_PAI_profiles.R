@@ -29,7 +29,7 @@ source("functions_lidar.R")
 
 # Pre-processing Parameters & Directories
 results_dir <- '../../03_RESULTS'
-site <- "Mormal"
+site <- "Blois" # Mormal Blois Aigoual
 results_path <- file.path("../../03_RESULTS", site)
 lidar_dir <- "LiDAR"
 masks_dir <- file.path(results_path, lidar_dir, "Heterogeneity_Masks")
@@ -43,24 +43,20 @@ deciles_dir <- file.path(masks_dir, "Deciles")
 equal_intervals_dir <- file.path(masks_dir, "Equal_Intervals")
 class_dir <- file.path(deciles_dir, "10_Quantiles")
 
-# Open and Mask Sentinel-2 raster
-mask_10m <- terra::rast(file.path(masks_dir, "artifacts_low_vegetation_majority_90_p_res_10_m.envi"))
-lai_sentinel <- terra::rast("/home/corroyez/Documents/NC_Full/03_RESULTS/Mormal/L2A_T31UER_A031222_20210614T105443/res_10m/PRO4SAIL_INVERSION_atbd/addmult/bands_3_4_8/L2A_T31UER_A031222_20210614T105443_Refl_lai.envi")
-lai_sentinel_masked <- lai_sentinel * mask_10m
-sentinel_values <- values(lai_sentinel_masked)
-# writeRaster(lai_sentinel_masked, file.path("/home/corroyez/Documents/tmp", "final.tif"))
-
-# Open and Mask LiDAR raster
-lai_lidar <- terra::rast(file.path(results_path,
-                                   "LiDAR/PAI/lidR/lidar.envi"))
-lai_lidar_masked <- terra::project(lai_lidar, mask_10m)
-lai_lidar_masked <- lai_lidar_masked * mask_10m
-lai_lidar_values <- values(lai_lidar_masked)
+# Open LiDAR S-2 LAI
+mask_10m <- terra::rast(file.path(masks_dir,
+                                  "artifacts_low_vegetation_majority_90_p_res_10_m.envi"))
+lai_lidar_raster <- terra::rast(file.path(masks_dir,
+                                          "lai_lidar_masked_res_10_m.envi"))
+lai_lidar <- values(lai_lidar_raster)
+lai_s2_raster <- terra::rast(file.path(masks_dir,
+                                       "lai_s2_masked_res_10_m.envi"))
+lai_s2 <- values(lai_s2_raster)
 
 # Initial correlation
-cor <- correlation_test_function(lai_lidar_values, sentinel_values)
-plot_density_scatterplot(var_x = sentinel_values,
-                         var_y = lai_lidar_values,
+cor <- correlation_test_function(lai_lidar, lai_s2)
+plot_density_scatterplot(var_x = lai_s2,
+                         var_y = lai_lidar,
                          xlab = "LAI PROSAIL",
                          ylab = "LAI LiDAR",
                          dirname = profiles_dir,
@@ -283,17 +279,17 @@ dev.off()
 # ---------------------- Vegetation Depth Correlations -------------------------
 correlation_values <- list()
 
-for (i in seq(46.5, 2.5, by = -1)) {
-  pad_lidar_file <- file.path(profiles_dir, paste0("PAD_", i, "_46.69", ".tif"))
+# for (i in seq(46.5, 2.5, by = -1)) {
+for (i in seq(43.5, 2.5, by = -1)) {
+  # pad_lidar_file <- file.path(profiles_dir, paste0("PAD_", i, "_46.69", ".tif"))
+  pad_lidar_file <- file.path(profiles_dir, paste0("PAD_", i, "_44.18", ".tif"))
   pad_lidar <- terra::rast(pad_lidar_file)
   pad_lidar_proj <- terra::project(pad_lidar, mask_10m)
   
   lidar_masked <- pad_lidar_proj * mask_10m
   lidar_values <- values(lidar_masked)
   
-  sentinel_values <- values(lai_sentinel_masked)
-  
-  correlation_value <- cor(lidar_values, sentinel_values, use = "pairwise.complete.obs")
+  correlation_value <- cor(lidar_values, lai_s2, use = "pairwise.complete.obs")
   correlation_values[i] <- correlation_value
   print(i)
 }
@@ -304,7 +300,7 @@ png(file.path(profiles_dir, "initial_correlation_lidar_s2_for_profiles.png"),
     height = 1080, 
     units = "px", res = 200)
 
-plot(seq(0, 44, by = 1), rev(correlation_values), type = "l", 
+plot(seq(0, 41, by = 1), rev(correlation_values), type = "l", 
      xlim = c(0, 44), ylim = c(0, 0.65), 
      xlab = "LiDAR LAI Profile Depth", ylab = "Correlation Value",
      # main = "Correlation Values between LiDAR LAI Profiles of Varying Depth and Sentinel-2 LAI", 
@@ -315,8 +311,8 @@ plot(seq(0, 44, by = 1), rev(correlation_values), type = "l",
      cex.axis = 1.2)
 title(main = paste("Pearson Correlation between LiDAR LAI Profiles\n",
                    "Integrated over Varying Depth and Sentinel-2 LAI"))
-axis(side = 1, at = seq(0, 42.5, by = 2.5), labels = seq(0, 44, by = 2.5))
-points(seq(0, 44, by = 1), rev(correlation_values), pch = 1)
+axis(side = 1, at = seq(0, 40.5, by = 2.5), labels = seq(0, 41, by = 2.5))
+points(seq(0, 41, by = 1), rev(correlation_values), pch = 1)
 dev.off()
 
 # ---------- Vegetation Depth + Heterogeneity Correlations (std 3 classes) ---------------
@@ -331,19 +327,16 @@ for (low_quantile in seq(0, 2/3, by = inc)){
                                     sprintf("std_heter_raster_res_10_m_%s_%s.tif",
                                             low_quantile,
                                             high_quantile)))
-  correlations <- numeric(length(seq(46.5, 2.5, by = -1)))
+  correlations <- numeric(length(seq(43.5, 2.5, by = -1)))
   
-  for (i in seq(46.5, 2.5, by = -1)) {
-    pad_lidar_file <- file.path(profiles_dir, paste0("PAD_", i, "_46.69", ".tif"))
+  for (i in seq(43.5, 2.5, by = -1)) {
+    pad_lidar_file <- file.path(profiles_dir, paste0("PAD_", i, "_44.18", ".tif"))
     pad_lidar <- terra::rast(pad_lidar_file)
     pad_lidar_proj <- terra::project(pad_lidar, mask_10m)
     
     lidar_masked <- pad_lidar_proj * mask_10m
     lidar_masked <- mask(lidar_masked, quantile)
     lidar_values <- values(lidar_masked)
-    
-    lai_sentinel_maskedd <- mask(lai_sentinel_masked, quantile)
-    sentinel_values <- values(lai_sentinel_maskedd)
     
     # Density Scatterplot
     # plot_density_scatterplot(var_x = sentinel_values,
@@ -364,7 +357,7 @@ for (low_quantile in seq(0, 2/3, by = inc)){
     #                       "Residuals",
     #                       sprintf("residuals_%s_to_46.69.envi", i)))
     
-    correlation_value <- cor(lidar_values, sentinel_values, use = "pairwise.complete.obs")
+    correlation_value <- cor(lidar_values, lai_s2, use = "pairwise.complete.obs")
     correlations[i] <- correlation_value
   }
   correlation_values[[length(correlation_values) + 1]] <- correlations
@@ -393,10 +386,10 @@ colors <- c("#51a343", "#e6e6e6", "#9a4c00")
 for (i in seq_along(correlation_values)) {
   values <- correlation_values[[i]]
   values <- rev(values)
-  lines(seq(0, 44, by = 1), values, 
+  lines(seq(0, 41, by = 1), values, 
         type = "l", col = colors[i], lwd = 2)
 }
-axis(side = 1, at = seq(0, 42.5, by = 2.5), labels = seq(0, 44, by = 2.5))
+axis(side = 1, at = seq(0, 40.5, by = 2.5), labels = seq(0, 41, by = 2.5))
 legend("bottomright", legend = c("Low CHM Heterogeneity", 
                                  "Medium CHM Heterogeneity",
                                  "High CHM Heterogeneity"), col = colors, 

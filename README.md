@@ -15,7 +15,7 @@ Repository of code developed during Nathan Corroyez's PhD Thesis: "Remotely-sens
 
 ## Setup
 
-At the place you desired, execute:
+At the place you desire, execute:
 ```bash
 # Clone repo
 git clone git@github.com:ncorroyez/ncorroyez_thesis_code.git
@@ -23,13 +23,15 @@ git clone git@github.com:ncorroyez/ncorroyez_thesis_code.git
 # Access to the repo
 cd ncorroyez_thesis_code
 
-# Install dependencies 
-Rscript install_dependencies.R
+# Setup directories architecture & install dependencies 
+Rscript setup.R
 ```
 
-#### Download LiDAR data
+#### Download LiDAR data and shape files
 
-LiDAR acquisitions of IMPRINT (ANR-19-CE32-0005) are available. If you are from Maison de la Télédétection, you can directly copy the data from mo-pulse server (_PROJETS/2023_2026_These_Nathan_Corroyez/LiDAR). Otherwise, please contact me.
+LiDAR acquisitions of Aigoual, Blois, and Mormal study sites are available. If you are from Maison de la Télédétection, directly copy the data from mo-pulse server (_PROJETS/2023_2026_These_Nathan_Corroyez/LiDAR). Otherwise, please contact me.
+
+Once data are downloaded, put them in their associated directories (e.g. for Mormal data, put LiDAR data in 01_DATA/Mormal/LiDAR and shape files in 01_DATA/Mormal/Shape).
 
 ### Utilization
 

@@ -58,8 +58,8 @@ mormal_lidr_dir <- file.path(mormal_results_path, lidar_dir, "PAI/lidR")
 mormal_masks_dir <- file.path(mormal_results_path, 
                               lidar_dir, 
                               "Heterogeneity_Masks")
-dir.create(path = mormal_lidr_dir, showWarnings = F, recursive = T)
-dir.create(path = mormal_masks_dir, showWarnings = F, recursive = T)
+# dir.create(path = mormal_lidr_dir, showWarnings = F, recursive = T)
+# dir.create(path = mormal_masks_dir, showWarnings = F, recursive = T)
 
 # Blois
 blois_results_path <- file.path("../../03_RESULTS", "Blois")
@@ -67,8 +67,8 @@ blois_lidr_dir <- file.path(blois_results_path, lidar_dir, "PAI/lidR")
 blois_masks_dir <- file.path(blois_results_path, 
                              lidar_dir, 
                              "Heterogeneity_Masks")
-dir.create(path = blois_lidr_dir, showWarnings = F, recursive = T)
-dir.create(path = blois_masks_dir, showWarnings = F, recursive = T)
+# dir.create(path = blois_lidr_dir, showWarnings = F, recursive = T)
+# dir.create(path = blois_masks_dir, showWarnings = F, recursive = T)
 
 # Aigoual
 aigoual_results_path <- file.path("../../03_RESULTS", "Aigoual")
@@ -76,14 +76,14 @@ aigoual_lidr_dir <- file.path(aigoual_results_path, lidar_dir, "PAI/lidR")
 aigoual_masks_dir <- file.path(aigoual_results_path, 
                              lidar_dir, 
                              "Heterogeneity_Masks")
-dir.create(path = aigoual_lidr_dir, showWarnings = F, recursive = T)
-dir.create(path = aigoual_masks_dir, showWarnings = F, recursive = T)
+# dir.create(path = aigoual_lidr_dir, showWarnings = F, recursive = T)
+# dir.create(path = aigoual_masks_dir, showWarnings = F, recursive = T)
 
 # Results Reproducibility
 set.seed(0) 
-total_sample_size <- 205000
-training_sample_size <- 5000
-test_sample_size <- 200000
+# total_sample_size <- 205000
+# training_sample_size <- 5000
+# test_sample_size <- 200000
 
 # ------------------------ Data Preparation: Mormal ----------------------------
 mormal_predictors_values <- extract_predictors_values(mormal_masks_dir, 
@@ -329,23 +329,23 @@ plot_density_scatterplot(aigoual_visualization$Actual,
 )
 
 # Visualize predicted raster
-new_raster[non_na_indices] <- predictions
-plot_histogram(list(predictions, predictions_ranger$data$response, test_data$lai_lidar, test_data$lai_s2),
-               var_labs = c("Predicted", "Predicted max", "Actual", "S2"))
-# plot_histogram(list(predictions, predictions_ranger$data$response),
-#                var_labs = c("Predicted", "Predicted max"))
-
-# 1. Calculate RMSE of the trained model
-train_predictions <- predict(rf_model, newdata = training_data)
-train_rmse <- sqrt(mean((training_data$lai_lidar - train_predictions)^2))
-print(paste("RMSE on training data:", train_rmse))
-
-# 2. Make predictions on the validation data
-predictions <- predict(rf_model, newdata = test_data)
-
-# 3. Calculate RMSE on the predicted data
-validation_rmse <- sqrt(mean((test_data$lai_lidar - predictions)^2))
-print(paste("RMSE on validation data:", validation_rmse))
+# new_raster[non_na_indices] <- predictions
+# plot_histogram(list(predictions, predictions_ranger$data$response, test_data$lai_lidar, test_data$lai_s2),
+#                var_labs = c("Predicted", "Predicted max", "Actual", "S2"))
+# # plot_histogram(list(predictions, predictions_ranger$data$response),
+# #                var_labs = c("Predicted", "Predicted max"))
+# 
+# # 1. Calculate RMSE of the trained model
+# train_predictions <- predict(rf_model, newdata = training_data)
+# train_rmse <- sqrt(mean((training_data$lai_lidar - train_predictions)^2))
+# print(paste("RMSE on training data:", train_rmse))
+# 
+# # 2. Make predictions on the validation data
+# predictions <- predict(rf_model, newdata = test_data)
+# 
+# # 3. Calculate RMSE on the predicted data
+# validation_rmse <- sqrt(mean((test_data$lai_lidar - predictions)^2))
+# print(paste("RMSE on validation data:", validation_rmse))
 
 
 # ----------------------------------- ES ---------------------------------------

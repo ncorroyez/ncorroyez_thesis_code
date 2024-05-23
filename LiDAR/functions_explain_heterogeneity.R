@@ -55,15 +55,6 @@ initialize_predicted_raster <- function(masks_dir){
 }
 
 extract_predictors_values <- function(masks_dir, lidr_dir){
-  # Mask
-  mask_10m <- terra::rast(
-    file.path(masks_dir, 
-              "artifacts_low_vegetation_majority_90_p_res_10_m.envi"))
-  chm <- terra::rast(
-    file.path(
-      masks_dir, 
-      "mnc_masked_with_average_mnc_thresholded_90_p_kept_res_10_m.envi"))
-  
   # We want to predict LiDAR LAI
   lai_lidar_raster <- terra::rast(file.path(masks_dir,
                                             "lai_lidar_masked_res_10_m.envi")) 
@@ -81,7 +72,7 @@ extract_predictors_values <- function(masks_dir, lidr_dir){
   lskew_raster <- terra::rast(file.path(lidr_dir, 
                                         "lskew_res_10_m_non_norm.tif"))
   
-  # Define indices
+  # Define indices: keep same number of values for each raster
   indices <- list(
     na_indices_lcv = countNA(lcv_raster),
     na_indices_std = countNA(cv_raster),
@@ -122,8 +113,8 @@ extract_predictors_values <- function(masks_dir, lidr_dir){
   lcv <- lcv[complete.cases(lcv), ]
   lskew <- lskew[complete.cases(lskew), ]
   
-  print(length(lai_lidar))
-  print(length(lai_s2))
+  # print(length(lai_lidar))
+  # print(length(lai_s2))
   
   return(list(
     lai_lidar = lai_lidar, 

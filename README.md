@@ -6,13 +6,13 @@ Repository of code developed during Nathan Corroyez's PhD Thesis: "Remotely-sens
 
 ## Table of Contents
 
-- [Setup](##setup)
-- [Preprocessing](##preprocessing)
-- [Fonctionnalities](##fonctionnalities)
-- [License](##license)
-- [Contact](##contact)
-- [Acknowledgments](##acknowledgments)
-- [References](##references)
+- [Setup](##Setup)
+- [Preprocessing](##Preprocessing)
+- [Fonctionnalities](##Fonctionnalities)
+- [License](##License)
+- [Contact](##Contact)
+- [Acknowledgments](##Acknowledgments)
+- [References](##References)
 
 ## Setup
 

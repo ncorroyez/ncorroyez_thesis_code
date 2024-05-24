@@ -12,6 +12,7 @@ Repository of code developed during Nathan Corroyez's PhD Thesis: "Remotely-sens
 - [License](##license)
 - [Contact](##contact)
 - [Acknowledgments](##acknowledgments)
+- [References](##references)
 
 ## Setup
 
@@ -23,7 +24,7 @@ git clone git@github.com:ncorroyez/ncorroyez_thesis_code.git
 # Access to the repo
 cd ncorroyez_thesis_code
 
-# Setup directories architecture & install dependencies 
+# Setup directories architecture (01_DATA, 03_RESULTS) & install dependencies 
 Rscript setup.R
 ```
 
@@ -32,13 +33,17 @@ Rscript setup.R
 LiDAR acquisitions of Aigoual, Blois, and Mormal study sites are available. 
 If you are from Maison de la Télédétection, directly copy the data from mo-pulse server (_PROJETS/2023_2026_These_Nathan_Corroyez/LiDAR). Otherwise, please contact me.
 
+LiDAR data are provided in Lambert 93 format (1-las_l93), UTM 31N format (2-las_utm), and normalized UTM 31N format (Z -> H, 3-las_normalized_utm). The L93 to UTM 31N conversion can be done using 'convert_l93_into_utm.R' file and the UTM 31N to normalized UTM 31N with 'normalized_height.R' file. After the conversions, L93 data are not further used. 
+
 Once data are downloaded, put them in their associated directories (e.g. for Mormal data, put LiDAR data in 01_DATA/Mormal/LiDAR and shape files in 01_DATA/Mormal/Shape).
 
 ### Preprocessing
 
 #### Canopy Height Models
 
-a
+```bash
+Rscript LiDAR/0.create_mne.R
+```
 
 #### LiDAR LAI (at the moment, PAI)
 
@@ -54,7 +59,15 @@ a
 
 ### Fonctionnalities
 
-####
+#### Heterogeneity and Depth Analysis
+
+a
+
+#### Correct Sentinel-2 LAI with LiDAR Information: The Machine Learning Way
+
+##### On full areas
+
+##### On deciduous-only areas
 
 ### License
 
@@ -71,4 +84,9 @@ Please don't hesitate to initiate contact with me or one of my supervisors for a
 - jerome.ogee@inrae.fr (co-director of research)
 
 ## Acknowledgments
+
 We would like to thank the CNES agency for the TOSCA Grant N°00007689 along with INRAE's MathNum Department and Agence Nationale de la Recherche via the MaCCMic ANR Project, (ANR-21-CE32-0012) for the cofounding of the PhD Thesis of Nathan Corroyez, and the IMPRINT ANR Project (ANR-19-CE32-0005) that funded the LiDAR acquisitions of Mormal, Blois, and Aigoual sites.
+
+## References
+
+a

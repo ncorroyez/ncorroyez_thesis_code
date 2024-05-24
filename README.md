@@ -7,7 +7,7 @@ Repository of code developed during Nathan Corroyez's PhD Thesis: "Remotely-sens
 ## Table of Contents
 
 - [Setup](##setup)
-- [Utilization](##utilization)
+- [Preprocessing](##preprocessing)
 - [Fonctionnalities](##fonctionnalities)
 - [License](##license)
 - [Contact](##contact)
@@ -29,13 +29,32 @@ Rscript setup.R
 
 #### Download LiDAR data and shape files
 
-LiDAR acquisitions of Aigoual, Blois, and Mormal study sites are available. If you are from Maison de la Télédétection, directly copy the data from mo-pulse server (_PROJETS/2023_2026_These_Nathan_Corroyez/LiDAR). Otherwise, please contact me.
+LiDAR acquisitions of Aigoual, Blois, and Mormal study sites are available. 
+If you are from Maison de la Télédétection, directly copy the data from mo-pulse server (_PROJETS/2023_2026_These_Nathan_Corroyez/LiDAR). Otherwise, please contact me.
 
 Once data are downloaded, put them in their associated directories (e.g. for Mormal data, put LiDAR data in 01_DATA/Mormal/LiDAR and shape files in 01_DATA/Mormal/Shape).
 
-### Utilization
+### Preprocessing
+
+#### Canopy Height Models
+
+a
+
+#### LiDAR LAI (at the moment, PAI)
+
+a
+
+#### Sentinel-2 LAI
+
+a
+
+#### Masks
+
+a
 
 ### Fonctionnalities
+
+####
 
 ### License
 

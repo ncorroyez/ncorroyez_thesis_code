@@ -1,4 +1,4 @@
-# Repository of Nathan Corroyez's PhD Thesis Code at INRAE / Maison de la Télédétection, 10/2023 to 10/2026 (forecast)
+# Repository of Nathan Corroyez's PhD Thesis Code at INRAE / Maison de la Télédétection, 10/2023 to at least 09/2026 (planned)
 
 ## Description
 
@@ -66,6 +66,8 @@ a
 #### Correct Sentinel-2 LAI with LiDAR Information: The Machine Learning Way
 
 ##### On full areas
+
+##### On deciduous-flexible areas
 
 ##### On deciduous-only areas
 

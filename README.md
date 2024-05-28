@@ -73,7 +73,7 @@ a
 
 ### License
 
-This work is intended to be in the public domain.
+This work is intended to be in the public domain (GPL-3).
 
 ### Contact
 
@@ -91,4 +91,6 @@ We would like to thank the CNES agency for the TOSCA Grant N°00007689 along wit
 
 ## References
 
-a
+Feret J, de Boissieu F (2024)._prosail: PROSAIL leaf and canopy radiative transfer model and inversion routines_. R package version 2.4.1, [https://gitlab.com/jbferet/prosail](https://gitlab.com/jbferet/prosail)
+
+Roussel, J. R., Auty, D., Coops, N. C., Tompalski, P., Goodbody, T. R., Meador, A. S., ... & Achim, A. (2020). _lidR: An R package for analysis of Airborne Laser Scanning (ALS) data_. Remote Sensing of Environment, 251, 112061. (https://cran.r-project.org/package=lidR.)

@@ -39,9 +39,9 @@ Shapefiles are declined in three files for each site, including the site delimit
 
 Once data are downloaded, put them in their associated directories (e.g. for Mormal data, put LiDAR data in 01_DATA/Mormal/LiDAR and shape files in 01_DATA/Mormal/Shape).
 
-### Preprocessing
+## Preprocessing
 
-#### Canopy Height Models
+### Canopy Height Models
 
 Canopy Height Models (CHMs) are deduced from the subtraction of the Digital Terrain Model (DTM) from the Digital Surface Model (DSM). The DTM is calculated via the _TIN_ algorithm and the DSM is obtained using a _pitfree_ algorithm. In these calculations, a LAS catalog of the LiDAR data is created thanks to the _lidR_ package (Roussel et al., 2024). 
 
@@ -49,7 +49,7 @@ Canopy Height Models (CHMs) are deduced from the subtraction of the Digital Terr
 Rscript LiDAR/0_create_chm.R
 ```
 
-#### LiDAR LAI and Other Metrics
+### LiDAR LAI and Other Metrics
 
 LiDAR metrics are calculated via the _lidR_ package. LiDAR LAI is deduced thanks to a gap fraction method.
 
@@ -63,7 +63,7 @@ CHM-related metrics are obtained via _1_calculate_lidar_metrics.R_ script:
 Rscript LiDAR/1_calculate_chm_metrics.R
 ```
 
-#### Sentinel-2 LAI
+### Sentinel-2 LAI
 
 Sentinel-2 LAI is obtained using the PROSAIL model. The R package _prosail_ (Féret et al., 2024) is employed.
 
@@ -71,7 +71,7 @@ Sentinel-2 LAI is obtained using the PROSAIL model. The R package _prosail_ (Fé
 Rscript Sentinel_2/1_train_predict_prosail.R
 ```
 
-#### Masks
+### Masks
 
 Several masks are created. The final masks that are used in further analysis are:
 - Mask 1: masks low vegetation (<2m) areas, routes, and clearings. All tree species and lands are included.
@@ -82,9 +82,9 @@ Several masks are created. The final masks that are used in further analysis are
 Rscript LiDAR/2_create_masks.R
 ```
 
-### Fonctionnalities
+## Fonctionnalities
 
-#### Heterogeneity and Depth Analysis
+### Heterogeneity and Depth Analysis
 
 In this step, preliminary hypotheses about heterogeneity and depth are verified.
 
@@ -92,7 +92,7 @@ In this step, preliminary hypotheses about heterogeneity and depth are verified.
 Rscript LiDAR/3_heterogeneity_analysis.R
 ```
 
-#### Correct Sentinel-2 LAI with LiDAR Information: The Machine Learning Way
+### Correct Sentinel-2 LAI with LiDAR Information: The Machine Learning Way
 
 The feature selection is done by a Sequential Features Selector.
 Several models are tested: Random Forest, and Partial Least Square Regression.
@@ -103,17 +103,17 @@ LAI correction can be done either by training on full areas, in mixed deciduous-
 Rscript LiDAR/3_s2_lai_correction_via_ml.R
 ```
 
-##### On full areas
+#### On full areas
 
-##### On deciduous-flexible areas
+#### On deciduous-flexible areas
 
-##### On deciduous-only areas
+#### On deciduous-only areas
 
-### License
+## License
 
 This work is intended to be in the public domain (GPL-3).
 
-### Contact
+## Contact
 
 Please don't hesitate to initiate contact with me or one of my supervisors for any questions, remarks, or advice about this work.
 

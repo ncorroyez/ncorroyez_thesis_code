@@ -33,7 +33,7 @@ Rscript setup.R
 LiDAR acquisitions of Aigoual, Blois, and Mormal study sites, along with their related shapefiles are available. 
 If you are from Maison de la Télédétection, directly copy the data from the _mo-pulse_ server (_PROJETS/2023_2026_These_Nathan_Corroyez/LiDAR). Otherwise, please contact me.
 
-LiDAR data are provided in Lambert-93 format (1-las_l93), UTM 31N format (2-las_utm), and normalized UTM 31N format (Z -> H, 3-las_normalized_utm). The L93 to UTM 31N conversion can be done using 'convert_l93_into_utm.R' file and the UTM 31N to normalized UTM 31N with 'normalized_height.R' file. After the conversions, Lambert-93 data are not further used. 
+LiDAR data are provided in Lambert-93 format (1-las_l93), UTM 31N format (2-las_utm), and normalized UTM 31N format (Z -> H, 3-las_normalized_utm). The L93 to UTM 31N conversion can be done using the '0_convert_l93_into_utm.R' file and the UTM 31N to normalized UTM 31N with the '0_normalized_height.R' file. After the conversions, Lambert-93 data are not further used. 
 
 Shapefiles are declined in three files for each site, including the site delimitation in both Lambert-93 and UTM 31N coordinates, and the tree species (BDForêt V2, in Lambert-93).
 
@@ -46,21 +46,16 @@ Once data are downloaded, put them in their associated directories (e.g. for Mor
 Canopy Height Models (CHMs) are deduced from the subtraction of the Digital Terrain Model (DTM) from the Digital Surface Model (DSM). The DTM is calculated via the _TIN_ algorithm and the DSM is obtained using a _pitfree_ algorithm. In these calculations, a LAS catalog of the LiDAR data is created thanks to the _lidR_ package (Roussel et al., 2024). 
 
 ```bash
-Rscript LiDAR/0_create_chm.R
+Rscript LiDAR/1_create_chm.R
 ```
 
 ### LiDAR LAI and Other Metrics
 
 LiDAR metrics are calculated via the _lidR_ package. LiDAR LAI is deduced thanks to a gap fraction method.
 
-LiDAR LAI and point clouds-related metrics are obtained via _1_calculate_lidar_metrics.R_ script:
+LiDAR LAI, along with CHM-related and point clouds-related metrics, are obtained via _1_calculate_lidar_metrics.R_ script:
 ```bash
-Rscript LiDAR/1_calculate_point_clouds_metrics.R
-```
-
-CHM-related metrics are obtained via _1_calculate_lidar_metrics.R_ script:
-```bash
-Rscript LiDAR/1_calculate_chm_metrics.R
+Rscript LiDAR/2_calculate_lidar_metrics.R
 ```
 
 ### Sentinel-2 LAI
@@ -68,7 +63,7 @@ Rscript LiDAR/1_calculate_chm_metrics.R
 Sentinel-2 LAI is obtained using the PROSAIL model. The R package _prosail_ (Féret et al., 2024) is employed.
 
 ```bash
-Rscript Sentinel_2/1_train_predict_prosail.R
+Rscript Sentinel_2/2_train_predict_prosail.R
 ```
 
 ### Masks
@@ -79,7 +74,7 @@ Several masks are created. The final masks that are used in further analysis are
 - Mask 3: masks low vegetation (<2m) areas, routes, and clearings. Only deciduous tree species are included.
 
 ```bash
-Rscript LiDAR/2_create_masks.R
+Rscript LiDAR/3_create_masks.R
 ```
 
 ## Fonctionnalities
@@ -89,7 +84,7 @@ Rscript LiDAR/2_create_masks.R
 In this step, preliminary hypotheses about heterogeneity and depth are verified.
 
 ```bash
-Rscript LiDAR/3_heterogeneity_analysis.R
+Rscript LiDAR/4_heterogeneity_analysis.R
 ```
 
 ### Correct Sentinel-2 LAI with LiDAR Information: The Machine Learning Way
@@ -97,10 +92,10 @@ Rscript LiDAR/3_heterogeneity_analysis.R
 The feature selection is done by a Sequential Features Selector.
 Several models are tested: Random Forest, and Partial Least Square Regression.
 
-LAI correction can be done either by training on full areas, in mixed deciduous-coniferous areas, or deciduous-only areas.
+LAI correction can be done either by training in full areas, in mixed deciduous-coniferous areas, or in deciduous-only areas.
 
 ```bash
-Rscript LiDAR/3_s2_lai_correction_via_ml.R
+Rscript LiDAR/5_s2_lai_correction_via_ml.R
 ```
 
 #### On full areas

@@ -49,32 +49,42 @@ Canopy Height Models (CHMs) are deduced from the subtraction of the Digital Terr
 Rscript LiDAR/1_create_chm.R
 ```
 
+### Low Vegetation and Forest Composition Masks
+
+Several masks are created. The final masks that are used in further analysis are:
+- Mask 1: masks low vegetation (<2m) areas, routes, and clearings. All tree species and lands are included. ("Full_Composition")
+- Mask 2: masks low vegetation (<2m) areas, routes, and clearings. Deciduous tree species and deciduous-coniferous mix (mainly deciduous) species are included. ("Deciduous_Flex")
+- Mask 3: masks low vegetation (<2m) areas, routes, and clearings. Only deciduous tree species are included. ("Deciduous_Only")
+
+```bash
+Rscript LiDAR/2_create_vegetation_forest_masks.R
+```
+
 ### LiDAR LAI and Other Metrics
 
 LiDAR metrics are calculated via the _lidR_ package. LiDAR LAI is deduced thanks to a gap fraction method.
 
-LiDAR LAI, along with CHM-related and point clouds-related metrics, are obtained via _1_calculate_lidar_metrics.R_ script:
+LiDAR LAI, along with CHM-related and point clouds-related metrics, are obtained via _3_calculate_lidar_metrics.R_ script:
 ```bash
-Rscript LiDAR/2_calculate_lidar_metrics.R
+Rscript LiDAR/3_calculate_lidar_metrics.R
 ```
+Metrics are saved in "raw" format (just the computed metric as it stands), "not_masked", or masked using one of the three presented before.
 
 ### Sentinel-2 LAI
 
 Sentinel-2 LAI is obtained using the PROSAIL model. The R package _prosail_ (Féret et al., 2024) is employed.
 
 ```bash
-Rscript Sentinel_2/2_train_predict_prosail.R
+Rscript Sentinel_2/3_train_predict_prosail.R
 ```
+Sentinel-2 LAI is saved in "raw" format (just the computed metric as it stands), "not_masked", or masked using one of the three presented before. Other metrics might be extracted in the future (CHL, LMA, ...).
 
-### Masks
+### Heterogeneity Quantiles
 
-Several masks are created. The final masks that are used in further analysis are:
-- Mask 1: masks low vegetation (<2m) areas, routes, and clearings. All tree species and lands are included.
-- Mask 2: masks low vegetation (<2m) areas, routes, and clearings. Deciduous tree species and deciduous-coniferous mix (mainly deciduous) species are included.
-- Mask 3: masks low vegetation (<2m) areas, routes, and clearings. Only deciduous tree species are included.
+Heterogeneity quantiles are created using a heterogeneity metric (either mean, max, std, cv, or rumple for the moment).
 
 ```bash
-Rscript LiDAR/3_create_masks.R
+Rscript LiDAR/4_prepare_heterogeneity_depth_analysis.R
 ```
 
 ## Fonctionnalities
@@ -84,7 +94,7 @@ Rscript LiDAR/3_create_masks.R
 In this step, preliminary hypotheses about heterogeneity and depth are verified.
 
 ```bash
-Rscript LiDAR/4_heterogeneity_analysis.R
+Rscript LiDAR/5_heterogeneity_analysis.R
 ```
 
 ### Correct Sentinel-2 LAI with LiDAR Information: The Machine Learning Way
@@ -95,7 +105,7 @@ Several models are tested: Random Forest, and Partial Least Square Regression.
 LAI correction can be done either by training in full areas, in mixed deciduous-coniferous areas, or in deciduous-only areas.
 
 ```bash
-Rscript LiDAR/5_s2_lai_correction_via_ml.R
+Rscript LiDAR/6_s2_lai_correction_via_ml.R
 ```
 
 #### On full areas

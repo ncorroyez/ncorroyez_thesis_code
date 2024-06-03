@@ -28,7 +28,7 @@ cd ncorroyez_thesis_code
 Rscript setup.R
 ```
 
-#### Download LiDAR data and shapefiles
+### Download LiDAR data and shapefiles
 
 LiDAR acquisitions of Aigoual, Blois, and Mormal study sites, along with their related shapefiles are available. 
 If you are from Maison de la Télédétection, directly copy the data from the _mo-pulse_ server (_PROJETS/2023_2026_These_Nathan_Corroyez/LiDAR). Otherwise, please contact me.

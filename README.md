@@ -55,6 +55,8 @@ Several masks are created. The final masks that are used in further analysis are
 - Mask 1: masks low vegetation (<2m) areas, routes, and clearings. All tree species and lands are included. ("Full_Composition")
 - Mask 2: masks low vegetation (<2m) areas, routes, and clearings. Deciduous tree species and deciduous-coniferous mix (mainly deciduous) species are included. ("Deciduous_Flex")
 - Mask 3: masks low vegetation (<2m) areas, routes, and clearings. Only deciduous tree species are included. ("Deciduous_Only")
+- Mask 4: masks low vegetation (<2m) areas, routes, and clearings. Coniferous tree species and coniferous-deciduous mix (mainly coniferous) species are included. ("Coniferous_Flex")
+- Mask 5: masks low vegetation (<2m) areas, routes, and clearings. Only coniferous tree species are included. ("Ceciduous_Only")
 
 ```bash
 Rscript LiDAR/2_create_vegetation_forest_masks.R
@@ -68,7 +70,7 @@ LiDAR LAI, along with CHM-related and point clouds-related metrics, are obtained
 ```bash
 Rscript LiDAR/3_calculate_lidar_metrics.R
 ```
-Metrics are saved in "raw" format (just the computed metric as it stands), "not_masked", or masked using one of the three presented before.
+Metrics are saved in "raw" format (just the computed metric as it stands), "not_masked", or masked using one of the five presented before.
 
 ### Sentinel-2 LAI
 
@@ -77,7 +79,7 @@ Sentinel-2 LAI is obtained using the PROSAIL model. The R package _prosail_ (Fé
 ```bash
 Rscript Sentinel_2/3_train_predict_prosail.R
 ```
-Sentinel-2 LAI is saved in "raw" format (just the computed metric as it stands), "not_masked", or masked using one of the three presented before. Other metrics might be extracted in the future (CHL, LMA, ...).
+Sentinel-2 LAI is saved in "raw" format (just the computed metric as it stands), "not_masked", or masked using one of the five presented before. Other metrics might be extracted in the future (CHL, LMA, ...).
 
 ### Heterogeneity Quantiles
 
@@ -102,7 +104,8 @@ Rscript LiDAR/5_heterogeneity_analysis.R
 The feature selection is done by a Sequential Features Selector.
 Several models are tested: Random Forest, and Partial Least Square Regression.
 
-LAI correction can be done either by training in full areas, in mixed deciduous-coniferous areas, or in deciduous-only areas.
+LAI correction can be done either by training in full areas, in mixed deciduous-coniferous areas, in deciduous-only areas, in mixed coniferous-deciduous areas, or coniferous-only areas.
+The application of the model is first done on deciduous-only areas.
 
 ```bash
 Rscript LiDAR/6_s2_lai_correction_via_ml.R
@@ -113,6 +116,10 @@ Rscript LiDAR/6_s2_lai_correction_via_ml.R
 #### On deciduous-flexible areas
 
 #### On deciduous-only areas
+
+#### On coniferous-flexible areas
+
+#### On coniferous-only areas
 
 ## License
 

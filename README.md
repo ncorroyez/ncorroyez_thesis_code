@@ -28,6 +28,8 @@ cd ncorroyez_thesis_code
 Rscript setup.R
 ```
 
+(!! setup.R is not finished yet)
+
 ### Download LiDAR data and shapefiles
 
 LiDAR acquisitions of Aigoual, Blois, and Mormal study sites, along with their related shapefiles are available. 

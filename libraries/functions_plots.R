@@ -16,22 +16,35 @@ library(rasterVis)
 library(latticeExtra)
 library(RColorBrewer)
 
-save_envi_file <- function(raster_to_save_in_envi, 
-                           output_name,
-                           results_path){
-  dir.create(path = results_path, showWarnings = FALSE,recursive = TRUE)
+#' Save a raster file in ENVI format
+#' 
+#' This function saves a raster object in ENVI format.
+#'
+#' @param raster_to_save_in_envi Raster object to be saved.
+#' @param output_name Name of the output file without extension.
+#' @param results_path Directory where the file will be saved.
+save_envi_file <- function(raster_to_save_in_envi, output_name, results_path) {
+  if (!dir.exists(results_path)) {
+    dir.create(results_path, showWarnings = FALSE, recursive = TRUE)
+  }
   filename <- file.path(results_path, paste0(output_name, ".envi"))
-  writeRaster(raster_to_save_in_envi, 
-              filename = filename, 
-              overwrite=TRUE)
-  cat("ENVI file has been successfully created and saved at :", 
-      filename, "\n")
+  writeRaster(raster_to_save_in_envi, filename = filename, overwrite = TRUE)
+  cat("ENVI file has been successfully created and saved at:", filename, "\n")
 }
 
+#' Save a raster file in TIF format
+#' 
+#' This function saves a raster object in TIF format.
+#'
+#' @param raster_to_save_in_tif Raster object to be saved.
+#' @param output_name Name of the output file without extension.
+#' @param results_path Directory where the file will be saved.
 save_tif_file <- function(raster_to_save_in_tif, 
                           output_name,
                           results_path){
-  dir.create(path = results_path, showWarnings = FALSE,recursive = TRUE)
+  if (!dir.exists(results_path)) {
+    dir.create(results_path, showWarnings = FALSE, recursive = TRUE)
+  }
   filename <- file.path(results_path, paste0(output_name, "tif"))
   writeRaster(raster_to_save_in_tif, 
               filename = filename, 
@@ -40,6 +53,13 @@ save_tif_file <- function(raster_to_save_in_tif,
       filename, "\n")
 }
 
+#' Open a raster file
+#' 
+#' This function opens a raster file with supported extensions
+#' ("tif", "tiff", "envi").
+#'
+#' @param raster_path Path to the raster file.
+#' @return Raster object.
 open_raster_file <- function(raster_path){
   file_extension <- tools::file_ext(raster_path)
   valid_extensions <- c("tif", "tiff", "envi")
@@ -53,22 +73,48 @@ open_raster_file <- function(raster_path){
   }
 }
 
-keep_positive_values <- function(raster){
+#' Keep positive values in a raster
+#' 
+#' This function replaces negative values in a raster with zero.
+#'
+#' @param raster Raster object.
+#' @return Raster object with non-negative values.
+keep_positive_values <- function(raster) {
   raster_positive_values <- values(raster)
   raster_positive_values[raster_positive_values < 0] <- 0
   return(raster_positive_values)
 }
 
-open_raster_file_as_values <- function(raster_path){
+#' Open raster file and return values
+#' 
+#' This function opens a raster file and returns its values.
+#'
+#' @param raster_path Path to the raster file.
+#' @return Values of the raster.
+open_raster_file_as_values <- function(raster_path) {
   raster_mask <- open_raster_file(raster_path)
   return(values(raster_mask))
 }
 
-open_raster_file_as_positive_values <- function(raster_path){
+#' Open raster file and return non-negative values
+#' 
+#' This function opens a raster file and returns its non-negative values.
+#'
+#' @param raster_path Path to the raster file.
+#' @return Non-negative values of the raster.
+open_raster_file_as_positive_values <- function(raster_path) {
   raster_mask <- open_raster_file(raster_path)
   return(keep_positive_values(raster_mask))
 }
 
+#' Mask low vegetation in a raster
+#' 
+#' This function masks low vegetation areas in a raster based on a mask.
+#'
+#' @param var_matrix Matrix of raster values.
+#' @param var_raster Raster object to be masked.
+#' @param low_vegetation Logical mask for low vegetation.
+#' @return List containing masked raster and masked values.
 mask_low_vegetation <- function(var_matrix, var_raster, low_vegetation){
   # Mask
   index <- low_vegetation == 1 # Index where vegetation is high
@@ -85,6 +131,17 @@ mask_low_vegetation <- function(var_matrix, var_raster, low_vegetation){
   )
 }
 
+#' Save a basic plot
+#' 
+#' This function saves a basic plot to a PNG file.
+#'
+#' @param plot_to_save Plot object to be saved.
+#' @param dirname Directory where the file will be saved.
+#' @param filename Name of the output file.
+#' @param title Title of the plot.
+#' @param width_pixels Width of the plot in pixels.
+#' @param height_pixels Height of the plot in pixels.
+#' @param res Resolution of the plot.
 save_basic_plot <- function(plot_to_save,
                             dirname,
                             filename,
@@ -100,6 +157,20 @@ save_basic_plot <- function(plot_to_save,
   dev.off()
 }
 
+#' Save an x-y plot
+#' 
+#' This function saves an x-y plot to a PNG file.
+#'
+#' @param xvar X values for the plot.
+#' @param yvar Y values for the plot.
+#' @param dirname Directory where the file will be saved.
+#' @param filename Name of the output file.
+#' @param xlab Label for the x-axis.
+#' @param ylab Label for the y-axis.
+#' @param title Title of the plot.
+#' @param width_pixels Width of the plot in pixels.
+#' @param height_pixels Height of the plot in pixels.
+#' @param res Resolution of the plot.
 save_x_y_plot <- function(xvar,
                           yvar,
                           dirname,
@@ -118,6 +189,19 @@ save_x_y_plot <- function(xvar,
   dev.off()
 }
 
+#' Plot density scatterplot
+#' 
+#' This function plots a density scatterplot and optionally saves it.
+#'
+#' @param var_x X values for the plot.
+#' @param var_y Y values for the plot.
+#' @param xlab Label for the x-axis.
+#' @param ylab Label for the y-axis.
+#' @param title Title of the plot.
+#' @param dirname Directory where the file will be saved.
+#' @param filename Name of the output file.
+#' @param xlimits Limits for the x-axis.
+#' @param ylimits Limits for the y-axis.
 plot_density_scatterplot <- function(var_x,
                                      var_y,
                                      xlab, 
@@ -225,6 +309,34 @@ plot_density_scatterplot <- function(var_x,
   }
 }
 
+#' Plot Histogram
+#'
+#' This function creates and optionally saves a histogram for one or more
+#' sets of variables.
+#'
+#' @param vars_list A list or vector of numeric values to be plotted.
+#' @param title A character string specifying the title of the plot. 
+#' Default is "LAI Distributions".
+#' @param xlab A character string specifying the x-axis label. Default is "LAI".
+#' @param var_labs A vector of character strings specifying the labels 
+#' for the variables.
+#' @param dirname A character string specifying the directory name 
+#' where the plot will be saved.
+#' @param filename A character string specifying the name of the file 
+#' to save the plot.
+#' @param limits A numeric vector of length 2 specifying the limits of 
+#' the x-axis. Default is the range of the data.
+#'
+#' @return A histogram plot. Optionally saves the plot as a PNG file 
+#' if `dirname` and `filename` are provided.
+#'
+#' @examples
+#' vars_list <- list(rnorm(1000), rnorm(1000, mean = 3))
+#' var_labs <- c("Group 1", "Group 2")
+#' plot_histogram(vars_list, title = "My Histogram", var_labs = var_labs, 
+#' dirname = "plots", filename = "histogram")
+#'
+#' @export
 plot_histogram <- function(vars_list, 
                            title = NULL, 
                            xlab = NULL, 
@@ -295,6 +407,24 @@ plot_histogram <- function(vars_list,
   }
 }
 
+#' Correlation Test Function
+#'
+#' This function performs a correlation test between two numeric variables 
+#' and prints the result.
+#'
+#' @param x A numeric vector.
+#' @param y A numeric vector.
+#' @param method A character string specifying the method for the correlation
+#'  test. Default is "pearson". Other options include "kendall" and "spearman".
+#'
+#' @return The estimated correlation coefficient.
+#'
+#' @examples
+#' x <- rnorm(100)
+#' y <- rnorm(100)
+#' correlation <- correlation_test_function(x, y)
+#'
+#' @export
 correlation_test_function <- function(x, y, method = "pearson") {
   correlation_test <- cor.test(x, y, method = method)
   print(correlation_test)
@@ -308,6 +438,29 @@ correlation_test_function <- function(x, y, method = "pearson") {
   return(correlation_test$estimate)
 }
 
+#' Plot Distributions
+#'
+#' This function creates and optionally saves histograms 
+#' for each variable in a data frame.
+#'
+#' @param InputPROSAIL A data frame containing the variables to be plotted.
+#' @param save_plots A logical value indicating whether to save the plots. 
+#' Default is \code{FALSE}.
+#' @param dirname A character string specifying the directory name 
+#' where the plots will be saved.
+#' @param filename A character string specifying the name of the file 
+#' to save the plots.
+#'
+#' @return A grid of histogram plots. Optionally saves the plots as a PNG file
+#'  if \code{save_plots} is \code{TRUE} and 
+#'  both \code{dirname} and \code{filename} are provided.
+#'
+#' @examples
+#' InputPROSAIL <- data.frame(var1 = rnorm(1000), var2 = rnorm(1000, mean = 3))
+#' plot_distributions(InputPROSAIL, save_plots = TRUE, dirname = "plots", 
+#' filename = "distributions")
+#'
+#' @export
 plot_distributions <- function(InputPROSAIL,
                                save_plots = FALSE,
                                dirname = NULL,

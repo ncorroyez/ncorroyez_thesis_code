@@ -16,6 +16,25 @@ library(rasterVis)
 library(latticeExtra)
 library(RColorBrewer)
 
+#' Create Data Frame
+#'
+#' This function creates a data frame with specified row and column names.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#'
+#' @return A data frame with specified row and column names.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' create_dataframe(bands, noises, row_names, col_names)
+#'
+#' @export
 create_dataframe <- function(bands, 
                              noises,
                              row_names,
@@ -29,6 +48,28 @@ create_dataframe <- function(bands,
   return(df)
 }
 
+#' Create List of Variables for ATBD Bands and Noises
+#'
+#' This function creates a list of data matrices for different bands and noises.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#'
+#' @return A list of data matrices for different bands and noises.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' mask <- terra::rast("path/to/mask")
+#' create_atbd_bands_noises_vars_list(bands, noises, mask, "plots_dir", 
+#' "s2_output_dir", "image", "estimated_var")
+#'
+#' @export
 create_atbd_bands_noises_vars_list <- function(bands,
                                                noises,
                                                mask,
@@ -65,6 +106,28 @@ create_atbd_bands_noises_vars_list <- function(bands,
   return(data_list)
 }
 
+#' Create List of Rasters for ATBD Bands and Noises
+#'
+#' This function creates a list of raster data for different bands and noises.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#'
+#' @return A list of raster data for different bands and noises.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' mask <- terra::rast("path/to/mask")
+#' create_atbd_bands_noises_rasters_list(bands, noises, mask, "plots_dir", 
+#' "s2_output_dir", "image", "estimated_var")
+#'
+#' @export
 create_atbd_bands_noises_rasters_list <- function(bands,
                                                   noises,
                                                   mask,
@@ -100,6 +163,21 @@ create_atbd_bands_noises_rasters_list <- function(bands,
   return(data_list)
 }
 
+#' Save Data Frame to CSV
+#'
+#' This function saves a data frame to a CSV file.
+#'
+#' @param df The data frame to save.
+#' @param df_path_to_save The path where the data frame should be saved.
+#' @param df_name_to_save The name of the CSV file to save.
+#'
+#' @return None. The data frame is saved as a CSV file.
+#'
+#' @examples
+#' df <- data.frame(matrix(rnorm(10), nrow = 5))
+#' save_df(df, "path/to/save", "my_dataframe")
+#'
+#' @export
 save_df <- function(df, df_path_to_save, df_name_to_save){
   if (is.null(df_path_to_save) || is.null(df_name_to_save)) {
     stop("DF Path or Name cannot be NULL.")
@@ -112,6 +190,36 @@ save_df <- function(df, df_path_to_save, df_name_to_save){
       paste0(df_name_to_save, ".csv"), "\n")
 }
 
+#' Correlation Analysis for ATBD Bands and Noises
+#'
+#' This function performs a correlation analysis for different bands and noises,
+#'  and saves the result as a CSV file.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#' @param comparison_path The path where the comparison result should be saved.
+#' @param csv_name The name of the CSV file to save the comparison result.
+#'
+#' @return None. The correlation analysis result is saved as a CSV file.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' mask <- terra::rast("path/to/mask")
+#' correlation_atbd_bands_noise(bands, noises, row_names, col_names, mask,
+#' "plots_dir", "s2_output_dir", "image", "estimated_var", "comparison_path", 
+#' "csv_name")
+#'
+#' @export
 correlation_atbd_bands_noise <- function(bands,
                                          noises,
                                          row_names,
@@ -150,6 +258,33 @@ correlation_atbd_bands_noise <- function(bands,
           paste0(csv_name, "_subset"))
 }
 
+#' RMSE Analysis for ATBD Bands and Noises
+#'
+#' This function performs an RMSE analysis for different bands and noises, and saves the result as a CSV file.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#' @param comparison_path The path where the comparison result should be saved.
+#' @param csv_name The name of the CSV file to save the comparison result.
+#'
+#' @return None. The RMSE analysis result is saved as a CSV file.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' mask <- terra::rast("path/to/mask")
+#' rmse_atbd_bands_noise(bands, noises, row_names, col_names, mask, "plots_dir", "s2_output_dir", "image", "estimated_var", "comparison_path", "csv_name")
+#'
+#' @export
 rmse_atbd_bands_noise <- function(bands,
                                   noises,
                                   row_names,
@@ -191,6 +326,35 @@ rmse_atbd_bands_noise <- function(bands,
           paste0(csv_name, "_subset"))
 }
 
+#' Bias Analysis for ATBD Bands and Noises
+#'
+#' This function performs a bias analysis for different bands and noises, 
+#' and saves the result as a CSV file.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#' @param comparison_path The path where the comparison result should be saved.
+#' @param csv_name The name of the CSV file to save the comparison result.
+#'
+#' @return None. The bias analysis result is saved as a CSV file.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' mask <- terra::rast("path/to/mask")
+#' bias_atbd_bands_noise(bands, noises, row_names, col_names, mask, "plots_dir",
+#'  "s2_output_dir", "image", "estimated_var", "comparison_path", "csv_name")
+#'
+#' @export
 bias_atbd_bands_noise <- function(bands,
                                   noises,
                                   row_names,
@@ -232,6 +396,34 @@ bias_atbd_bands_noise <- function(bands,
           paste0(csv_name, "_subset"))
 }
 
+#' Residual Analysis for ATBD Bands and Noises
+#'
+#' This function calculates residuals between different bands and noises, 
+#' and saves the residuals as raster files.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#' @param comparison_path The path where the residuals should be saved.
+#'
+#' @return None. The residuals are saved as raster files.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' mask <- terra::rast("path/to/mask")
+#' residuals_atbd_bands_noise(bands, noises, row_names, col_names, mask, 
+#' "plots_dir", "s2_output_dir", "image", "estimated_var", "comparison_path")
+#'
+#' @export
 residuals_atbd_bands_noise <- function(bands,
                                        noises,
                                        row_names,
@@ -274,6 +466,36 @@ residuals_atbd_bands_noise <- function(bands,
   }
 }
 
+#' Error Analysis for ATBD Bands and Noises
+#'
+#' This function calculates the mean absolute error for different bands 
+#' and noises, and saves the result as a CSV file.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#' @param comparison_path The path where the comparison result should be saved.
+#' @param csv_name The name of the CSV file to save the comparison result.
+#'
+#' @return None. The error analysis result is saved as a CSV file.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' mask <- terra::rast("path/to/mask")
+#' error_atbd_bands_noise(bands, noises, row_names, col_names, mask,
+#' "plots_dir", "s2_output_dir", "image", "estimated_var", "comparison_path",
+#' "csv_name")
+#'
+#' @export
 error_atbd_bands_noise <- function(bands,
                                    noises,
                                    row_names,
@@ -316,6 +538,36 @@ error_atbd_bands_noise <- function(bands,
           paste0(csv_name, "_subset"))
 }
 
+#' R-Squared Analysis for ATBD Bands and Noises
+#'
+#' This function calculates the R-squared values for different bands and noises,
+#'  and saves the result as a CSV file.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#' @param comparison_path The path where the comparison result should be saved.
+#' @param csv_name The name of the CSV file to save the comparison result.
+#'
+#' @return None. The R-squared analysis result is saved as a CSV file.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' mask <- terra::rast("path/to/mask")
+#' r_squared_atbd_bands_noise(bands, noises, row_names, col_names, mask, 
+#' "plots_dir", "s2_output_dir", "image", "estimated_var", "comparison_path", 
+#' "csv_name")
+#'
+#' @export
 r_squared_atbd_bands_noise <- function(bands,
                                        noises,
                                        row_names,
@@ -357,6 +609,35 @@ r_squared_atbd_bands_noise <- function(bands,
           paste0(csv_name, "_subset"))
 }
 
+#' Standard Deviation Analysis for ATBD Bands and Noises
+#'
+#' This function calculates the standard deviation of residuals for different 
+#' bands and noises, and saves the result as a CSV file.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#' @param comparison_path The path where the comparison result should be saved.
+#' @param csv_name The name of the CSV file to save the comparison result.
+#'
+#' @return None. The standard deviation analysis result is saved as a CSV file.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' mask <- terra::rast("path/to/mask")
+#' std_atbd_bands_noise(bands, noises, row_names, col_names, mask, "plots_dir",
+#' "s2_output_dir", "image", "estimated_var", "comparison_path", "csv_name")
+#'
+#' @export
 std_atbd_bands_noise <- function(bands,
                                  noises,
                                  row_names,
@@ -399,6 +680,36 @@ std_atbd_bands_noise <- function(bands,
           paste0(csv_name, "_subset"))
 }
 
+#' Histogram and Scatterplot Analysis for ATBD Bands and Noises
+#'
+#' This function generates histograms and scatterplots for different bands 
+#' and noises, and saves the plots in the specified directory.
+#'
+#' @param bands A vector of band names.
+#' @param noises A vector of noise types.
+#' @param row_names A vector of row names.
+#' @param col_names A vector of column names.
+#' @param mask A spatial mask for the data.
+#' @param plots_dir Directory for storing plots.
+#' @param s2_output_dir Directory containing S2 output data.
+#' @param image The image identifier.
+#' @param estimated_var The variable being estimated.
+#' @param comparison_path The path where the plots should be saved.
+#'
+#' @return None. The histograms and scatterplots are saved in 
+#' the specified directory.
+#'
+#' @examples
+#' bands <- c("B1", "B2")
+#' noises <- c("N1", "N2")
+#' row_names <- c("Row1", "Row2")
+#' col_names <- c("Col1", "Col2")
+#' mask <- terra::rast("path/to/mask")
+#' histograms_scatterplots_atbd_bands_noise(bands, noises, row_names, 
+#' col_names, mask, "plots_dir", "s2_output_dir", "image", "estimated_var", 
+#' "comparison_path")
+#'
+#' @export
 histograms_scatterplots_atbd_bands_noise <- function(bands,
                                                      noises,
                                                      row_names,
@@ -467,6 +778,28 @@ histograms_scatterplots_atbd_bands_noise <- function(bands,
   }
 }
 
+#' Calculate Metrics for Actual and Predicted Values
+#'
+#' This function calculates various metrics (correlation, R-squared, RMSE,
+#' bias, error, standard deviation)
+#' between actual and predicted values, generates histogram and scatterplot
+#' visualizations, and saves the results.
+#'
+#' @param actual RasterLayer of actual values.
+#' @param predicted RasterLayer of predicted values.
+#' @param save_path Directory to save the results.
+#' @param actual_lab Label for the actual values. Default is "actual".
+#' @param predicted_lab Label for the predicted values. Default is "predicted".
+#'
+#' @return A data frame containing the calculated metrics.
+#'
+#' @examples
+#' actual <- terra::rast("path/to/actual")
+#' predicted <- terra::rast("path/to/predicted")
+#' save_path <- "path/to/save/results"
+#' calculate_metrics(actual, predicted, save_path)
+#'
+#' @export
 calculate_metrics <- function(actual, 
                               predicted, 
                               save_path,
@@ -573,6 +906,45 @@ calculate_metrics <- function(actual,
   return(metrics_df)
 }
 
+#' Calculate Metrics from a Reference Raster
+#'
+#' This function calculates various metrics (correlation, R-squared, RMSE, bias,
+#'  error, standard deviation)
+#' between a reference raster and a set of predicted rasters, 
+#' generates histogram and scatterplot visualizations,
+#' and saves the results.
+#'
+#' @param reference_raster_path Path to the reference raster file.
+#' @param rasters_dir Directory containing the predicted raster files.
+#' @param image Image identifier.
+#' @param noises Vector of noise types.
+#' @param bands Vector of band names.
+#' @param mask Spatial mask for the data.
+#' @param valid_indices Indices of valid data points.
+#' @param estimated_var Variable being estimated.
+#' @param reference_type Type of the reference data.
+#' @param comparison_path Directory to save the results.
+#' @param csv_name Name of the CSV file to save the comparison result.
+#'
+#' @return A data frame containing the calculated metrics.
+#'
+#' @examples
+#' reference_raster_path <- "path/to/reference_raster"
+#' rasters_dir <- "path/to/rasters"
+#' image <- "image_identifier"
+#' noises <- c("noise1", "noise2")
+#' bands <- c("band1", "band2")
+#' mask <- terra::rast("path/to/mask")
+#' valid_indices <- complete.cases(values(mask))
+#' estimated_var <- "estimated_variable"
+#' reference_type <- "reference_type"
+#' comparison_path <- "path/to/save/results"
+#' csv_name <- "comparison_results.csv"
+#' calculate_metrics_from_a_reference(reference_raster_path, rasters_dir, image,
+#' noises, bands, mask, valid_indices, estimated_var, reference_type, 
+#' comparison_path, csv_name)
+#'
+#' @export
 calculate_metrics_from_a_reference <- function(reference_raster_path,
                                                rasters_dir,
                                                image,

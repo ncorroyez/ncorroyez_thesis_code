@@ -515,3 +515,253 @@ writeRaster(lad, filename = file.path(output_dir, "cv_lad_10m.tif"),
 
 # Plot the result
 plot(ladcv, main = "Coefficient of Variation (CV) of LAD")
+
+
+calculate_lad_profiles <- function(las_i, z0, zmax){
+  
+  las_i <- filter_poi(las_i, Z >= z0)
+  Hmax_i <- max(las_i$Z)
+  if (Hmax_i < z0) {
+    # Set all values to 0 or NA or NULL
+    rumple_i <- NA
+    VCI_i <- NA
+    CV_PAD_i <- NA
+    # Hmax_i <- NA
+    PAI_i <- NA
+    max_PAD_i  <- NA
+    H_max_PAD_i <- NA
+    pad_i_translated <- NULL
+    pad_i_translated$z <- 0
+    pad_i_translated$lad <- NA
+  } else {
+    
+    # CHM
+    # chm_i <- grid_canopy(las_i, res = 1,
+    #                      pitfree(thresholds = c(0, 2, 5, 10, 15),
+    #                              max_edge = c(0, 1),
+    #                              subcircle = 0.5))
+    
+    # DTM
+    # dtm_i <- rasterize_terrain(las_i, res = 1, algorithm = tin())
+    
+    # DTS
+    # dts_i <- rasterize_canopy(las_i, res = 1, p2r())
+    
+    # CHM
+    # chm_i <- dts_i # - dtm_i
+    
+    # Calculations before translation
+    # rumple_i <- rumple_index(chm_i)
+    VCI_i <- VCI(las_i$Z, zmax = Hmax_i)
+    
+    # Translation
+    las_i$Z <- las_i$Z + zmax - max(las_i$Z)
+    pad_i_translated <- LAD(las_i@data$Z, z0=0)
+    
+    # Calculations after translation
+    CV_PAD_i <- 100 * sd(pad_i_translated$lad, 
+                         na.rm = TRUE) / mean(pad_i_translated$lad, 
+                                              na.rm = TRUE)
+    
+    PAI_i <- sum(pad_i_translated$lad, na.rm = TRUE)
+    max_PAD_i <- max(pad_i_translated$lad, na.rm = TRUE)
+    H_max_PAD_i <- pad_i_translated$z[which(pad_i_translated$lad==max_PAD_i)]
+  }
+  
+  # Output
+  metrics = list(
+    # rumple_i,
+    Hmax_i,
+    VCI_i,
+    CV_PAD_i, 
+    PAI_i, 
+    max_PAD_i, 
+    H_max_PAD_i, 
+    pad_i_translated)
+  
+  names(metrics)=c(
+    # "Rumple_Index",
+    "Hmax",
+    "VCI",
+    "CV_PAD",
+    "PAI",
+    "Max_PAD",
+    "H_maxPAD",
+    "PAD_Profile")
+  
+  return(metrics)
+}
+
+flatten_and_merge <- function(metrics_list, nb_z) {
+  flattened_list <- lapply(seq_along(metrics_list), function(i) {
+    las <- metrics_list[[i]]
+    pad_profile <- as.data.frame(las$PAD_Profile)
+    
+    # Flatten the PAD_Profile data frame before combining
+    pad_values <- unlist(pad_profile$lad)
+    
+    # Ensure that the number of columns in pad_profile matches nb_z
+    if (length(pad_values) < nb_z) {
+      pad_values <- c(pad_values, rep(0, nb_z - length(pad_values)))
+    } else if (length(pad_values) > nb_z) {
+      pad_values <- pad_values[1:nb_z]  # Trim excess values
+    }
+    
+    las_num <- paste0("las_", i)
+    
+    return(c(las_num, 
+             as.numeric(unlist(las[c(
+               # "Rumple_Index", 
+               "Hmax", 
+               "VCI", 
+               "CV_PAD", 
+               "PAI", 
+               "Max_PAD", 
+               "H_maxPAD")], 
+               use.names = FALSE)), 
+             pad_values))
+  })
+  
+  return(do.call(rbind, flattened_list))
+}
+
+calculate_lidar_metrics <- function(las_i, z0, zmax){
+  
+  # Rumple
+  chm_i <- grid_canopy(las_i, res = 1, 
+                       pitfree(thresholds = c(0, 2, 5, 10, 15), 
+                               max_edge = c(0, 1), 
+                               subcircle = 0.5))
+  
+  rumple_i <- rumple_index(chm_i)
+  
+  # Z
+  las_i$Z <- las_i$Z + zmax - max(las_i$Z)
+  
+  lad_profiles <- list()
+  for (z_start in seq(zmax - 1, by = -1)) {
+    z_end <- zmax
+    if (z_start >= z0) {
+      # Calculate LAD profile for the current height stratum
+      pad_i_norm <- LAD(las_i$Z)
+      
+      # Calculate the total LAD within the interval
+      total_lad <- sum(pad_i_norm$lad[
+        pad_i_norm$z >= z_end & pad_i_norm$z <= zmax])
+      
+      # pad_i_norm_sum <- data.frame(z = paste0(z_start, "-", z_end), 
+      #                          lad = sum(pad_i_norm$lad, na.rm = TRUE))
+      # pad_i_norm_sum <- sum(pad_i_norm$lad, na.rm = TRUE)
+      
+      # Store the LAD profile
+      lad_profiles[[paste0(z_start, "_", z_end)]] <- pad_i_norm$lad
+    }
+  }
+  
+  las_subset <- filter_poi(las_i, Z >= z0)
+  if (length(las_subset$Z) == 0) {   
+    Hmax_i <- max(las_i$Z)
+    VCI_i <-NA
+    
+    pad_i <-NULL
+    pad_i$z <-0
+    pad_i$lad <- NA 
+    
+    pad_i_norm <- data.frame(z = seq(z_start, z_end), 
+                             lad = rep(0, z_end - z_start + 1)) 
+    
+    CV_PAD_i <- NA
+    PAI_i <- NA
+    max_PAD_i <- NA
+    H_max_PAD_i <- NA
+  } 
+  else {
+    
+    Hmax_i <- max(las_i$Z)
+    VCI_i <- VCI(las_subset$Z, by = 1, zmax= Hmax_i)
+    
+    step <- 1
+    pad_i <-LAD(las_i$Z, dz=step, k=0.5, z0=z0)
+    
+    if (dim(pad_i)[1] == 0) {
+      
+      pad_i <- NULL
+      nb_ind_z <- ceiling(Hmax_i - (z0 + 0.5*step )) 
+      
+      pad_i <- data.frame(matrix(NA,ncol= 2, nrow=nb_ind_z)) 
+      colnames(pad_i) = c("z", "lad")
+      pad_i$z <- seq(from = (z0+0.5*step),
+                     to = (z0+ (nb_indice_z - 0.5)*step), by =step) 
+      pad_i$lad <- rep(NA, nb_ind_z)
+      
+      CV_PAD_i <- NA
+      PAI_i <- NA
+      max_PAD_i <- NA
+      H_max_PAD_i <- NA
+      
+    } else {
+      
+      CV_PAD_i <- 100 * sd(pad_i$lad, 
+                           na.rm = TRUE) / mean(pad_i$lad, 
+                                                na.rm = TRUE) 
+      PAI_i <- sum(pad_i$lad, na.rm = TRUE)  
+      
+      max_PAD_i <- max(pad_i$lad, na.rm = TRUE)
+      H_max_PAD_i <- pad_i$z[which(pad_i$lad==max_PAD_i)]
+      
+      # Norm
+      CV_PAD_norm_i <- 100 * sd(pad_i$lad, 
+                                na.rm = TRUE) / mean(pad_i$lad, 
+                                                     na.rm = TRUE) 
+      PAI_norm_i <- sum(pad_i$lad, na.rm = TRUE)  
+      
+      max_PAD_norm_i <- max(pad_i$lad, na.rm = TRUE)
+      H_max_PAD_norm_i <- pad_i$z[which(pad_i$lad==max_PAD_i)]
+      
+    }
+  }
+  
+  # # gap fraction raster ave seuil de hauteur pour definir les trouees
+  # # raster moins lisse que pour rumple, restitue mieux les trouees 
+  # chm_tr_i <- grid_canopy(las_i_h, res=0.5, p2r() )    
+  # 
+  # gapf_raster_i <- 100 * (length(
+  #   chm_tr_i@data@values[!is.na(chm_tr_i@data@values) 
+  #                        & chm_tr_i@data@values < seuil_gap ]))
+  # / ( length( chm_tr_i@data@values[!is.na(chm_tr_i@data@values)] ) )
+  # 
+  # # gap fraction issu du ratio des premiers retours parvenant sous le seuil 
+  # # des hauteurs par rapport au nbre total de premier retours
+  # 
+  # gapf_pts_i <- 100 * dim(filter_poi(
+  #   las_i_h, ReturnNumber ==1L & Z <seuil_gap)@data)[1] /  
+  #   dim(filter_first(las_i_h)@data)[1]
+  
+  
+  metrics = list(rumple_i,
+                 VCI_i, 
+                 Hmax_i,
+                 CV_PAD_i, 
+                 PAI_i, 
+                 max_PAD_i, 
+                 H_max_PAD_i, 
+                 # gapf_raster_i, 
+                 # gapf_pts_i,
+                 pad_i,
+                 pad_i_norm_sum
+  )
+  names(metrics)=c("Rumple_index",
+                   "VCI",
+                   "Hmax", 
+                   "CV_PAD",
+                   "PAI",
+                   "Max_PAD",
+                   "H_maxPAD",
+                   # "Gap_fraction_raster",
+                   # "Gap_fraction_pts",
+                   "Profil_pad",
+                   "Profil_pad_norm_from_top")
+  
+  return(metrics)
+  
+}

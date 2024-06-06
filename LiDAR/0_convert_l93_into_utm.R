@@ -30,7 +30,7 @@ actual_epsg <- "-epsg 2154"
 
 # Chemin vers le dossier contenant les fichiers LAS
 datapath <- "/home/corroyez/Documents/NC_Full/01_DATA"
-site <- "Aigoual" # Mormal Blois Aigoual
+site <- "Mormal" # Mormal Blois Aigoual
 las_l93_dir <- file.path(datapath, site, "LiDAR/1-las_l93")
 las_l93_files <- list.files(las_l93_dir, pattern = "\\.las$", full.names = FALSE)
 las_utm_dir <- file.path(datapath, site, "LiDAR/2-las_utm")

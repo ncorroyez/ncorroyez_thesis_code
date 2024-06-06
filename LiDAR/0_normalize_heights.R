@@ -27,22 +27,25 @@ if (rstudioapi::isAvailable()){
 }
 
 # Import useful functions
-source("functions_lidar.R")
-source("../functions_plots.R")
+source("../libraries/functions_lidar.R")
+source("../libraries/functions_plots.R")
 
 # Directories 
 data <- "../../01_DATA"
-site <- "Aigoual" # Mormal Blois Aigoual
+site <- "Mormal" # Mormal Blois Aigoual
 data_site <- file.path(data, site)
+lidar <- "LiDAR"
 
-# LAS
-las <- "LiDAR"
-las_utm <- file.path(las,"2-las_utm/")
+# Directories setup
+
+# UTM
+las_utm <- file.path(lidar,"2-las_utm/")
 las_dir <- file.path(data_site, las_utm)
-las_norm_utm <- file.path(las,"3-las_normalize<_utm/")
-las_norm_dir <- file.path(data_site, las_norm_utm)
-las_files <- list.files(las_dir, pattern = "\\.las$", full.names = TRUE)
 dir.create(path = las_dir, showWarnings = FALSE, recursive = TRUE)
+
+# Normalized UTM
+las_norm_utm <- file.path(lidar,"3-las_normalized_utm/")
+las_norm_dir <- file.path(data_site, las_norm_utm)
 dir.create(path = las_norm_dir, showWarnings = FALSE, recursive = TRUE)
 
 # Catalog
@@ -52,8 +55,9 @@ plot(ctg)
 
 # LiDR optimization
 opt_chunk_size(ctg) <- 0 # Processing by files
-opt_chunk_buffer(ctg) <- 1
-
+opt_chunk_buffer(ctg) <- 10
 set_lidr_threads(1)
+
+# Normalization
 opt_output_files(ctg) <- paste0(file.path(las_norm_dir, "{*}_norm"))
-nctg <- normalize_height(ctg, knnidw())
+normalized_ctg <- normalize_height(ctg, tin())

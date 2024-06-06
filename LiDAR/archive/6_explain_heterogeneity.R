@@ -38,9 +38,9 @@ if (rstudioapi::isAvailable()){
 }
 
 # --------------------------- Import useful functions --------------------------
-source("functions_lidar.R")
-source("functions_explain_heterogeneity.R")
-source("../functions_plots.R")
+source("../libraries/functions_lidar.R")
+source("../libraries/functions_explain_heterogeneity.R")
+source("../libraries/functions_plots.R")
 
 # ----------------------------- Plotting Parameters ----------------------------
 default_par <- par(no.readonly = TRUE)
@@ -74,8 +74,8 @@ blois_masks_dir <- file.path(blois_results_path,
 aigoual_results_path <- file.path("../../03_RESULTS", "Aigoual")
 aigoual_lidr_dir <- file.path(aigoual_results_path, lidar_dir, "PAI/lidR")
 aigoual_masks_dir <- file.path(aigoual_results_path, 
-                             lidar_dir, 
-                             "Heterogeneity_Masks")
+                               lidar_dir, 
+                               "Heterogeneity_Masks")
 # dir.create(path = aigoual_lidr_dir, showWarnings = F, recursive = T)
 # dir.create(path = aigoual_masks_dir, showWarnings = F, recursive = T)
 
@@ -84,6 +84,14 @@ set.seed(0)
 # total_sample_size <- 205000
 # training_sample_size <- 5000
 # test_sample_size <- 200000
+
+# Masks
+full_composition_mask <- terra::rast(file.path(mormal_masks_dir,
+                                             "artifacts_full_composition_low_vegetation_majority_90_p_res_10_m.envi"))
+deciduous_only_mask <- terra::rast(file.path(mormal_masks_dir,
+                                             "artifacts_deciduous_only_low_vegetation_majority_90_p_res_10_m.envi"))
+deciduous_flex_mask <- terra::rast(file.path(mormal_masks_dir,
+                                             "artifacts_deciduous_flex_low_vegetation_majority_90_p_res_10_m.envi"))
 
 # ------------------------ Data Preparation: Mormal ----------------------------
 mormal_predictors_values <- extract_predictors_values(mormal_masks_dir, 
@@ -144,7 +152,7 @@ plot_density_scatterplot(aigoual_predictors_values$lai_s2,
                          title = "Aigoual Sentinel-2 LAI vs LiDAR LAI Values",
                          # xlimits = c(0,10),
                          # ylimits = c(0,10)
-                         )
+)
 cor(aigoual_predictors_values$lai_s2, aigoual_predictors_values$lai_lidar)
 
 aigoual_train_test_datasets <- create_train_test_datasets(
@@ -158,7 +166,7 @@ aigoual_lai_lidar_train_mean <- aigoual_train_test_datasets$lai_lidar_train_mean
 aigoual_lai_lidar_train_sd <- aigoual_train_test_datasets$lai_lidar_train_sd
 
 # Data Preparation: Mormal + Blois
-mix_training_data <- rbind(mormal_training_data, blois_training_data)
+mix_training_data <- rbind(mormal_training_data, blois_training_data, aigoual_training_data)
 mix_training_data <- mix_training_data[sample(nrow(mix_training_data)), ]
 
 # -------------------------------- Simple RF -----------------------------------
@@ -178,7 +186,7 @@ formula <- lai_lidar ~
   lskew
 
 rf_model <- randomForest(formula,
-                         data = mix_training_data, # mormal_ blois_ aigoual_ mix_
+                         data = mormal_training_data, # mormal_ blois_ aigoual_ mix_
                          ntree = ntree,
                          mtry = mtry,
                          importance = TRUE,
@@ -210,6 +218,8 @@ print(normalized_importance)
 
 # Predict using the random forest model
 # On Mormal
+lai_lidar_mormal <- terra::rast(file.path(mormal_masks_dir,
+                                          "lai_lidar_masked_res_10_m.envi")) 
 mormal_predictions <- predict(rf_model, newdata = mormal_test_data)
 mormal_comparison <- data.frame(Actual = mormal_test_data$lai_lidar,
                                 Predicted = mormal_predictions)
@@ -252,7 +262,7 @@ cat("Blois Metrics:",
 # On Aigoual
 aigoual_predictions <- predict(rf_model, newdata = aigoual_test_data)
 aigoual_comparison <- data.frame(Actual = aigoual_test_data$lai_lidar,
-                               Predicted = aigoual_predictions)
+                                 Predicted = aigoual_predictions)
 
 # Compute metrics
 correlation <- cor(aigoual_comparison$Actual, aigoual_comparison$Predicted)

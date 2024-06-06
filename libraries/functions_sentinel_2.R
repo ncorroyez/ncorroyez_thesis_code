@@ -16,6 +16,23 @@ library(ggplot2)
 library(truncnorm)
 library(bigRaster)
 
+#' Downloads Sentinel-2 satellite images for a given acquisition date 
+#' and region of interest.
+#'
+#' @param dateAcq Date of image acquisition in "YYYY-MM-DD" format.
+#' @param path_vector Path to the vector file defining the region of interest.
+#' @param output_directory Directory where the downloaded images will be saved.
+#' 
+#' @details This function checks if the images for the specified date 
+#' have already been downloaded. 
+#' If they haven't, it downloads them using the get_S2_L2A_Image function 
+#' from the preprocS2 package.
+#' 
+#' @return If images are successfully downloaded, it prints a success message. 
+#' If images have already been downloaded, it prints a message indicating 
+#' that the process is skipped.
+#' 
+#' @export
 download_S2_images <- function(dateAcq, path_vector, output_directory) {
   
   # Check if already downloaded
@@ -38,6 +55,23 @@ download_S2_images <- function(dateAcq, path_vector, output_directory) {
   }
 }
 
+#' Processes the downloaded Sentinel-2 images, including extraction, 
+#' resampling, and stacking of data.
+#'
+#' @param output_directory Directory containing the downloaded 
+#' Sentinel-2 images.
+#' @param path_vector Path to the vector file defining the region of interest.
+#' @param result_path Directory where the processed data will be saved.
+#' @param resolution Resolution of the processed data.
+#' @param S2source Source of the Sentinel-2 data (e.g., 'SAFE' or 'L2A').
+#'
+#' @details This function extracts data from the downloaded images, 
+#' resamples it to the specified resolution, 
+#' and stacks the data. It then returns the processed data object.
+#'
+#' @return Processed Sentinel-2 data object.
+#' 
+#' @export
 process_S2_data <- function(output_directory, 
                             path_vector, 
                             result_path, 
@@ -65,6 +99,18 @@ process_S2_data <- function(output_directory,
               path_vector = S2obj$path_vector))
 }
 
+#' Generates a cloud mask from the Sentinel-2 stack.
+#'
+#' @param S2_Stack Stack of Sentinel-2 images.
+#' @param Cloud_path Directory where the cloud mask will be saved.
+#' @param S2source Source of the Sentinel-2 data (e.g., 'SAFE' or 'L2A').
+#' @param saveRaw Logical indicating whether to save the raw cloud mask.
+#'
+#' @details This function generates a cloud mask from the Sentinel-2 stack using the save_cloud_s2 function from preprocS2 package.
+#'
+#' @return Object containing information about the generated cloud mask.
+#'
+#' @export
 generate_cloud_mask <- function(S2_Stack, Cloud_path, S2source, saveRaw = TRUE) {
   # Write cloud mask and get filenames
   cloudmasks <- preprocS2::save_cloud_s2(
@@ -79,6 +125,16 @@ generate_cloud_mask <- function(S2_Stack, Cloud_path, S2source, saveRaw = TRUE) 
   return(cloudmasks)
 }
 
+#' Writes the reflectance data to a file.
+#'
+#' @param S2_Stack Stack of Sentinel-2 images.
+#' @param S2_Bands Information about the bands in the Sentinel-2 data.
+#' @param refl_path Path where the reflectance data will be saved.
+#'
+#' @details This function writes the reflectance data to a file in ENVI format 
+#' using the save_reflectance_s2 function from preprocS2 package.
+#'
+#' @export
 write_reflectance <- function(S2_Stack, S2_Bands, refl_path) {
   # Save Reflectance file as ENVI image with BIL interleaves
   tile_S2 <- preprocS2::get_tile(S2_Bands$GRANULE)
@@ -99,11 +155,31 @@ write_reflectance <- function(S2_Stack, S2_Bands, refl_path) {
       refl_path, "\n")
 }
 
+#' Reads a raster from a file using the brick() function.
+#'
+#' @param refl_path Path to the raster file.
+#'
+#' @return Raster object read from the file.
+#'
+#' @export
 read_raster <- function(refl_path) {
   Refl <- brick(refl_path)
   return(Refl)
 }
 
+#' Computes spectral indices from the reflectance data.
+#'
+#' @param Refl Raster object containing reflectance data.
+#' @param SensorBands Information about the bands in the Sentinel-2 data.
+#' @param IndexList List of spectral indices to compute.
+#' @param ReflFactor Factor to scale reflectance values.
+#'
+#' @details This function computes spectral indices from the reflectance data 
+#' using the compute_S2SI_Raster function from the spinR package.
+#'
+#' @return List containing computed spectral indices.
+#'
+#' @export
 compute_spectral_indices <- function(Refl, SensorBands, IndexList, ReflFactor) {
   Indices <- spinR::compute_S2SI_Raster(
     Refl = Refl,
@@ -115,6 +191,16 @@ compute_spectral_indices <- function(Refl, SensorBands, IndexList, ReflFactor) {
   return(Indices)
 }
 
+#' Saves computed spectral indices to files.
+#'
+#' @param Indices List containing computed spectral indices.
+#' @param SI_path Path where the spectral indices will be saved.
+#' @param S2_Bands Information about the bands in the Sentinel-2 data.
+#'
+#' @details This function saves the computed spectral indices to files 
+#' in ENVI format.
+#'
+#' @export
 save_spectral_indices <- function(Indices, 
                                   SI_path, 
                                   S2_Bands) {
@@ -130,6 +216,19 @@ save_spectral_indices <- function(Indices,
   }
 }
 
+#' Updates the cloud mask based on radiometric filtering.
+#'
+#' @param CloudPath Directory containing the cloud mask.
+#' @param NDVI_Thresh Threshold value for NDVI.
+#' @param Indices List containing computed spectral indices.
+#' @param cloudmasks Object containing information about the cloud mask.
+#'
+#' @details This function updates the cloud mask based on radiometric filtering
+#' using the update_cloud_mask function.
+#'
+#' @return Path to the updated cloud mask.
+#'
+#' @export
 update_cloud_mask <- function(CloudPath, NDVI_Thresh, Indices, cloudmasks) {
   Elim <- which(values(Indices$SpectralIndices[['NDVI']]) < NDVI_Thresh)
   CloudInit <- stars::read_stars(cloudmasks$BinaryMask)
@@ -141,6 +240,22 @@ update_cloud_mask <- function(CloudPath, NDVI_Thresh, Indices, cloudmasks) {
   return(Cloud_File)
 }
 
+#' Preprocesses Sentinel-2 data.
+#'
+#' @param dateAcq Date of image acquisition in "YYYY-MM-DD" format.
+#' @param path_vector Path to the vector file defining the region of interest.
+#' @param output_directory Directory where the downloaded images are saved.
+#' @param result_path Directory where the processed data will be saved.
+#' @param resolution Resolution of the processed data.
+#' @param S2source Source of the Sentinel-2 data (e.g., 'SAFE' or 'L2A').
+#' @param saveRaw Logical indicating whether to save the raw cloud mask.
+#'
+#' @details This function preprocesses Sentinel-2 data by downloading images,
+#' processing them, computing spectral indices, and updating the cloud mask.
+#'
+#' @return List containing information about the processed data.
+#'
+#' @export
 preprocess_S2 <- function(dateAcq, 
                           path_vector,
                           output_directory,
@@ -199,6 +314,16 @@ preprocess_S2 <- function(dateAcq,
               Cloud_File = Cloud_File))
 }
 
+#' Calculates the observation and solar angles.
+#'
+#' @param sza Solar zenith angle (degrees).
+#' @param saa Solar azimuth angle (degrees).
+#' @param vza View zenith angle (degrees).
+#' @param vaa View azimuth angle (degrees).
+#'
+#' @return List containing the observation and solar angles.
+#'
+#' @export
 calculate_angles <- function(sza, saa, vza, vaa) {
   # Convert angles to radians
   sza_rad <- sza * pi / 180
@@ -215,6 +340,14 @@ calculate_angles <- function(sza, saa, vza, vaa) {
   return(list(tto = tto, tts = tts, psi = psi))
 }
 
+#' Retrieves Sentinel-2 geometry information.
+#'
+#' @param refl_path Path to the reflectance file.
+#'
+#' @return List containing the minimum and maximum values of observation 
+#' and solar angles.
+#'
+#' @export
 get_s2_geometry <- function(refl_path) {
   xmlfile <- file.path(dirname(refl_path), 'MTD_TL.xml')
   S2Geom <- get_S2geometry(MTD_TL_xml = xmlfile) 
@@ -234,12 +367,28 @@ get_s2_geometry <- function(refl_path) {
   return(GeomAcq)
 }
 
+
+#' Retrieves sensor response function.
+#'
+#' @param HDR_Refl ENVI header information for the reflectance data.
+#' @param Path_SensorResponse Path to the sensor response function file.
+#'
+#' @return Sensor response function.
+#'
+#' @export
 get_sensor_response <- function(HDR_Refl, Path_SensorResponse = NULL) {
   SensorName <- HDR_Refl$`sensor type` # Sentinel_2A
   SRF <- GetRadiometry(SensorName, Path_SensorResponse = Path_SensorResponse)
   return(SRF)
 }
 
+#' Adjusts optical constants.
+#'
+#' @param SRF Sensor response function.
+#'
+#' @return List containing adjusted optical constants.
+#'
+#' @export
 adjust_optical_constants <- function(SRF) {
   if (is.null(SpecPROSPECT)){
     SpecPROSPECT <- prospect::SpecPROSPECT_FullRange
@@ -263,6 +412,14 @@ adjust_optical_constants <- function(SRF) {
               SpecATM_Sensor = SpecATM_Sensor))
 }
 
+#' Defines spectral bands and variables.
+#'
+#' @param HDR_Refl ENVI header information for the reflectance data.
+#' @param S2BandSel List of selected Sentinel-2 bands.
+#'
+#' @return List containing information about spectral bands and variables.
+#'
+#' @export
 define_spectral_bands_and_variables <- function(HDR_Refl, S2BandSel) {
   ImgBandNames <- strsplit(HDR_Refl$`band names`, split = ',')[[1]]
   Bands2Select <- list()
@@ -278,12 +435,23 @@ define_spectral_bands_and_variables <- function(HDR_Refl, S2BandSel) {
               Bands2Select = Bands2Select))
 }
 
+#' Defines noise levels.
+#'
+#' @return List containing noise levels.
+#'
+#' @export
 define_noise_levels <- function() {
   NoiseLevel <- list()
   NoiseLevel$lai <- 0.05
   return(NoiseLevel)
 }         
 
+#' Defines acquisition geometry.
+#'
+#' @return List containing minimum and maximum values of observation 
+#' and solar angles.
+#'
+#' @export
 define_GeomAcq <- function(){
   GeomAcq <- list()
   GeomAcq$min <- GeomAcq$max <- list()
@@ -296,6 +464,12 @@ define_GeomAcq <- function(){
   return(GeomAcq)
 }
 
+#' Defines ATBD (Algorithm Theoretical Basis Document) acquisition geometry.
+#'
+#' @return List containing minimum and maximum values of observation 
+#' and solar angles for ATBD.
+#'
+#' @export
 define_atbd_GeomAcq <- function(){
   GeomAcq <- list()
   GeomAcq$min <- GeomAcq$max <- list()
@@ -308,7 +482,14 @@ define_atbd_GeomAcq <- function(){
   return(GeomAcq)
 }
 
-# Function to extract min, max, mean, and std for all variables
+#' Extracts summary statistics for each variable in the dataset.
+#'
+#' @param data Data frame containing the variables.
+#' @param filepath Directory path where the statistics file will be saved.
+#'
+#' @return Data frame containing the summary statistics.
+#'
+#' @export
 extract_summary_stats <- function(data, filepath) {
   # Initialize an empty data frame to store the statistics
   statistics_df <- data.frame(Variable = character(0), 
@@ -340,11 +521,43 @@ extract_summary_stats <- function(data, filepath) {
   return(statistics_df)
 }
 
+#' Generates random samples based on specified mean, standard deviation, 
+#' and range.
+#'
+#' @param mean Mean value of the distribution.
+#' @param std Standard deviation of the distribution.
+#' @param min_val Minimum value of the range.
+#' @param max_val Maximum value of the range.
+#' @param size Number of samples to generate.
+#'
+#' @return Vector of generated samples.
+#'
+#' @export
 generate_samples <- function(mean, std, min_val, max_val, size) {
-  samples <- rtruncnorm(n = size, a = min_val, b = max_val, mean = mean, sd = std)
+  samples <- rtruncnorm(n = size, 
+                        a = min_val, 
+                        b = max_val,
+                        mean = mean, 
+                        sd = std)
   return(samples)
 }
 
+#' Modifies the distribution of a parameter in the PROSAIL input based on
+#'  the desired distribution.
+#'
+#' @param InputPROSAIL List containing PROSAIL input parameters.
+#' @param parameter_name Name of the parameter to be modified.
+#' @param desired_distribution Desired distribution type 
+#' ('Gaussian', 'Uniform', 'Unique').
+#' @param minval Minimum value for the parameter (optional).
+#' @param maxval Maximum value for the parameter (optional).
+#' @param mean Mean value for the parameter (optional).
+#' @param std Standard deviation for the parameter (optional).
+#' @param unique_val Unique value for the parameter (optional).
+#'
+#' @return Modified PROSAIL input parameters.
+#'
+#' @export
 modify_parameter_distribution <- function(InputPROSAIL,
                                           parameter_name,
                                           desired_distribution,
@@ -395,6 +608,67 @@ modify_parameter_distribution <- function(InputPROSAIL,
 
 # ------------------------------------------- Distribution Functions -------------------------------------------------
 
+#' Sets the distribution of PROSAIL parameters based on the specified option.
+#'
+#' This function modifies the distribution of PROSAIL parameters according to 
+#' the specified distribution option. Different distribution options are 
+#' available, each representing a different parameterization scheme for the 
+#' PROSAIL model.
+#'
+#' @param distrib_option A character string specifying the distribution option 
+#'   to be used. Available options include:
+#'   \itemize{
+#'     \item{"atbd"}{ATBD (Algorithm Theoretical Basis Document) parameterization.}
+#'     \item{"atbd_S2Geom"}{ATBD parameterization with S2 geometry.}
+#'     \item{"atbd_JBGeom"}{ATBD parameterization with JB geometry.}
+#'     \item{"atbd_fixed_psi"}{ATBD parameterization with fixed PSI.}
+#'     \item{"atbd_psi_low"}{ATBD parameterization with low PSI.}
+#'     \item{"atbd_psi_high"}{ATBD parameterization with high PSI.}
+#'     \item{"atbd_fixed_tto"}{ATBD parameterization with fixed TTO.}
+#'     \item{"atbd_tto_low"}{ATBD parameterization with low TTO.}
+#'     \item{"atbd_tto_high"}{ATBD parameterization with high TTO.}
+#'     \item{"atbd_fixed_tts"}{ATBD parameterization with fixed TTS.}
+#'     \item{"atbd_tts_low"}{ATBD parameterization with low TTS.}
+#'     \item{"atbd_tts_high"}{ATBD parameterization with high TTS.}
+#'     \item{"q_zhang_et_al_2005"}{Parameter distribution based on Zhang et al. (2005).}
+#'     \item{"brede_et_al_2020"}{Parameter distribution based on Brede et al. (2020).}
+#'     \item{"hauser_et_al_2021"}{Parameter distribution based on Hauser et al. (2021).}
+#'     \item{"sinha_et_al_2020"}{Parameter distribution based on Sinha et al. (2020).}
+#'     \item{"verhoef_and_bach_2007"}{Parameter distribution based on Verhoef and Bach (2007).}
+#'     \item{"shiklomanov_et_al_2016"}{Parameter distribution based on Shiklomanov et al. (2016).}
+#'     \item{"atbd_n_high"}{ATBD parameterization with high nitrogen.}
+#'     \item{"atbd_n_low"}{ATBD parameterization with low nitrogen.}
+#'     \item{"atbd_n_full"}{ATBD parameterization with full range nitrogen.}
+#'     \item{"atbd_chl_high"}{ATBD parameterization with high chlorophyll content.}
+#'     \item{"atbd_chl_low"}{ATBD parameterization with low chlorophyll content.}
+#'     \item{"atbd_chl_full"}{ATBD parameterization with full range chlorophyll content.}
+#'     \item{"atbd_brown_high"}{ATBD parameterization with high brown pigment content.}
+#'     \item{"atbd_brown_low"}{ATBD parameterization with low brown pigment content.}
+#'     \item{"atbd_brown_full"}{ATBD parameterization with full range brown pigment content.}
+#'     \item{"atbd_ewt_high"}{ATBD parameterization with high equivalent water thickness.}
+#'     \item{"atbd_ewt_low"}{ATBD parameterization with low equivalent water thickness.}
+#'     \item{"atbd_ewt_full"}{ATBD parameterization with full range equivalent water thickness.}
+#'     \item{"atbd_lma_high"}{ATBD parameterization with high leaf mass per area.}
+#'     \item{"atbd_lma_low"}{ATBD parameterization with low leaf mass per area.}
+#'     \item{"atbd_lma_full"}{ATBD parameterization with full range leaf mass per area.}
+#'     \item{"atbd_lidfa_high"}{ATBD parameterization with high leaf angle distribution factor A.}
+#'     \item{"atbd_lidfa_low"}{ATBD parameterization with low leaf angle distribution factor A.}
+#'     \item{"atbd_lidfa_full"}{ATBD parameterization with full range leaf angle distribution factor A.}
+#'     \item{"atbd_lai_high"}{ATBD parameterization with high leaf area index.}
+#'     \item{"atbd_lai_low"}{ATBD parameterization with low leaf area index.}
+#'     \item{"atbd_lai_full"}{ATBD parameterization with full range leaf area index.}
+#'     \item{"atbd_q_high"}{ATBD parameterization with high diffuse radiation factor.}
+#'     \item{"atbd_q_low"}{ATBD parameterization with low diffuse radiation factor.}
+#'     \item{"atbd_q_full"}{ATBD parameterization with full range diffuse radiation factor.}
+#'     \item{"atbd_psoil_high"}{ATBD parameterization with high soil reflectance.}
+#'     \item{"atbd_psoil_low"}{ATBD parameterization with low soil reflectance.}
+#'     \item{"atbd_psoil_full"}{ATBD parameterization with full range soil reflectance.}
+#'   }
+#' @param refl_path Path to the reflectance file used for PROSAIL simulation.
+#'
+#' @return Modified PROSAIL input parameters.
+#'
+#' @export
 set_prosail_distribution <- function(distrib_option, refl_path) {
   switch(
     distrib_option,

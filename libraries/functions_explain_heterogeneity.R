@@ -1,5 +1,5 @@
 # ---
-# title: "functions_explain_heterogeneity"
+# title: "functions_explain_heterogeneity.R"
 # author: Nathan CORROYEZ, UMR TETIS, Univ Montpellier, AgroParisTech, CIRAD, CNRS, INRAE, F-34196, Montpellier, France
 # output: html_document
 # last_update: "2024-05-14"
@@ -55,9 +55,10 @@ initialize_predicted_raster <- function(masks_dir){
 }
 
 extract_predictors_values <- function(masks_dir, lidr_dir){
+  
   # We want to predict LiDAR LAI
   lai_lidar_raster <- terra::rast(file.path(masks_dir,
-                                            "lai_lidar_masked_res_10_m.envi")) 
+                                            "lai_lidar_masked_res_10_m.envi"))
   # Predictors
   lai_s2_raster <- terra::rast(
     file.path(masks_dir, "lai_s2_masked_res_10_m.envi"))

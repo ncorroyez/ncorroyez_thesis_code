@@ -11,35 +11,52 @@ gc() # Trigger the garbage collector to free up memory
 
 # ------------------------------ Libraries -------------------------------------
 library(foreach)
+# library(doFuture)
+# library(caret)
+library(future)
+# library(parallel)
+
 # ------ Define working dir as the directory where the script is located -------
-if (rstudioapi::isAvailable()) setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+if (rstudioapi::isAvailable()){
+  setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+  getwd()
+}
+
 # --------------------------- Import useful functions --------------------------
 source("../libraries/functions_JBF.R")
+source("../libraries/functions_plots.R")
+
 # ----------------------------- RF hyperparameters ----------------------------
 ntree <- 50
 mtry <- 3
+
 # ----------------------------- Plotting Parameters ----------------------------
 default_par <- par(no.readonly = TRUE)
 par(mar=c(5, 5, 4, 2) + 0.1) # Adjust margins as per your preference
 par(oma=c(0, 0, 0, 0)) # Adjust outer margins as per your preference
 par(cex=1.6, cex.axis=1.6, cex.names=1.6)
+
 # --------------------------- Results Reproducibility --------------------------
 training_sample_size <- 5000
 test_sample_size <- 50000
+
 # ---------------------------- Directories & Setup  ---------------------------- 
 data <- "../../01_DATA"
 lidar_dir <- "LiDAR"
 figure_path <- '../../04_FIGURES'
 dir.create(path = figure_path, showWarnings = F, recursive = T)
-sites <- c('Mormal', 'Blois', 'Aigoual')
+# sites <- c('Mormal', 'Blois', 'Aigoual')
+sites <- c('Aigoual')
 
 # ---------------------------------- Process  ---------------------------------- 
 # nb workers in parallel for SFS
 nbWorkers <- 4
+
 # create site directories
 results_path <- lidr_dir <- masks_dir <- list()
+
 for (site in sites){
-  results_path[[site]] <- file.path('../../03_RESULTS', site)
+  results_path[[site]] <- file.path('../03_RESULTS', site)
   lidr_dir[[site]] <- file.path(results_path[[site]], lidar_dir, "PAI/lidR")
   masks_dir[[site]] <- file.path(results_path[[site]], lidar_dir, "Heterogeneity_Masks")
   dir.create(path = lidr_dir[[site]], showWarnings = F, recursive = T)
@@ -49,6 +66,7 @@ for (site in sites){
 # --------------------------- Data processing ----------------------------------
 regression_data <- train_test_data <- list()
 SelectedVars <- EvolCorr <- SelectedVars_RF <- EvolCorr_RF <- list()
+
 # process each site independently
 for (site in sites){
   figure_path_site <- file.path(figure_path, site)
@@ -61,9 +79,10 @@ for (site in sites){
   # define path for additional lidar metrics
   lidar_metrics_path <- file.path(results_path[[site]],'lidar_metrics')
   lidar_metrics <- list.files(lidar_metrics_path)
+  
   #-- truc degeulasse a virer quand tu auras harmonise les sorties
-  lidar_metrics <- lidar_metrics[stringr::str_detect(string = lidar_metrics,'aux',negate = T)]
-  lidar_metrics <- lidar_metrics[stringr::str_detect(string = lidar_metrics,'hdr',negate = T)]
+  # lidar_metrics <- lidar_metrics[stringr::str_detect(string = lidar_metrics,'aux',negate = T)]
+  # lidar_metrics <- lidar_metrics[stringr::str_detect(string = lidar_metrics,'hdr',negate = T)]
   #-- 
   
   # create a dataframe for path of predicted value
@@ -71,12 +90,13 @@ for (site in sites){
   
   # create a dataframe for path of predictors
   names_lidar_metrics <- unlist(lapply(stringr::str_split(string = lidar_metrics, 
-                                                          pattern = '_'), '[[',1))
+                                                          pattern = '_'), 
+                                       '[[',1))
   predictors_path <- data.frame('name' = names_lidar_metrics, 
-                           'file' = file.path(results_path[[site]],
-                                              'lidar_metrics', lidar_metrics))
-  predictors_path <- rbind(predictors_path,data.frame('name' = 'S2_LAI', 
-                                            'file' = S2_LAI))
+                                'file' = file.path(results_path[[site]],
+                                                   'lidar_metrics', lidar_metrics))
+  predictors_path <- rbind(predictors_path,data.frame('name' = 'S2_LAI',
+                                                      'file' = S2_LAI))
   
   # extract values to be used during regression
   regression_data[[site]] <- extract_raster_info(predicted_path = predicted_path, 

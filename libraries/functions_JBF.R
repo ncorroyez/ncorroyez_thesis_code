@@ -16,20 +16,24 @@
 #' @export
 
 extract_raster_info <- function(predicted_path, predictors_path){
+  
   # read predicted value and predictors included in raster data
   predicted <- terra::rast(predicted_path[[1]]) 
   predictors <- terra::rast(predictors_path$file)
   names(predictors) <- predictors_path$name
+  
   # eliminate NA from all data when one layer has NA
   na_index_predictors <- terra::countNA(predictors)
   na_index_predicted <- terra::countNA(predicted)
   na_index <- na_index_predicted + na_index_predictors
   predictors[na_index > 0] <- NA
   predicted[na_index > 0] <- NA
+  
   # extract values and eliminate NA
   predicted_val <- terra::values(predicted)
   predicted_val <- data.frame(predicted_val[complete.cases(predicted_val), ])
   names(predicted_val) <- names(predicted_path)
+  
   predictors_val <- terra::values(predictors)
   predictors_val <- data.frame(predictors_val[complete.cases(predictors_val), ])
   names(predictors_val) <- predictors_path$name

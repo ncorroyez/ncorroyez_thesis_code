@@ -58,11 +58,13 @@ Several masks are created. The final masks that are used in further analysis are
 - Mask 2: masks low vegetation (<2m) areas, routes, and clearings. Deciduous tree species and deciduous-coniferous mix (mainly deciduous) species are included. ("Deciduous_Flex")
 - Mask 3: masks low vegetation (<2m) areas, routes, and clearings. Only deciduous tree species are included. ("Deciduous_Only")
 - Mask 4: masks low vegetation (<2m) areas, routes, and clearings. Coniferous tree species and coniferous-deciduous mix (mainly coniferous) species are included. ("Coniferous_Flex")
-- Mask 5: masks low vegetation (<2m) areas, routes, and clearings. Only coniferous tree species are included. ("Ceciduous_Only")
+- Mask 5: masks low vegetation (<2m) areas, routes, and clearings. Only coniferous tree species are included. ("Coniferous_Only")
 
 ```bash
 Rscript LiDAR/2_create_vegetation_forest_masks.R
 ```
+
+_N.B.: Since Mormal and Blois lack coniferous samples, only Aigoual coniferous masks will be used in practice._
 
 ### LiDAR LAI and Other Metrics
 
@@ -107,21 +109,13 @@ The feature selection is done by a Sequential Features Selector.
 Several models are tested: Random Forest, and Partial Least Square Regression.
 
 LAI correction can be done either by training in full areas, in mixed deciduous-coniferous areas, in deciduous-only areas, in mixed coniferous-deciduous areas, or coniferous-only areas.
-The application of the model is first done on deciduous-only areas.
+The training can be done on one, two, or three sites. Testing is done on one site at a time.
 
 ```bash
 Rscript LiDAR/6_s2_lai_correction_via_ml.R
 ```
 
-#### On full areas
-
-#### On deciduous-flexible areas
-
-#### On deciduous-only areas
-
-#### On coniferous-flexible areas
-
-#### On coniferous-only areas
+Each configuration outputs a set of features that explains 99% of the maximum correlation obtained with all the features.
 
 ## License
 
